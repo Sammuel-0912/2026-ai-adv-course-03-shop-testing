@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* 全域基礎樣式 */
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* 數字輸入框在各瀏覽器的外觀保持一致 */
+input[type="number"] {
+  appearance: textfield;
+}
