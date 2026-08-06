@@ -210,6 +210,7 @@ router.post('/:id/checkout', (req, res) => {
 
   const items = getOrderItems(order.id);
   const baseUrl = process.env.BASE_URL ?? 'http://localhost:3001';
+  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 
   const html = createPaymentFormHtml({
     merchantTradeNo,
@@ -218,6 +219,10 @@ router.post('/:id/checkout', (req, res) => {
     itemName: items.map((item) => `${item.name} x${item.quantity}`).join('#'),
     returnUrl: `${baseUrl}/api/ecpay/notify`,
     orderResultUrl: `${baseUrl}/api/ecpay/result`,
+    // ATM/超商等取號結果通知走同一個 notify（僅驗 CheckMacValue 回 1|OK）
+    paymentInfoUrl: `${baseUrl}/api/ecpay/notify`,
+    // ATM 取號完成頁的「返回商店」導回訂單頁，由訂單頁輪詢 check-payment
+    clientBackUrl: `${frontendUrl}/orders/${order.id}`,
   });
 
   res.json({ data: { html } });

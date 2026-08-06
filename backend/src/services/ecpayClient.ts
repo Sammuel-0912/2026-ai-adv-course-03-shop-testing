@@ -99,9 +99,13 @@ export interface CreatePaymentFormOptions {
   itemName: string;
   returnUrl: string;
   orderResultUrl: string;
+  /** ATM 等非即時付款方式的取號結果通知（server-to-server） */
+  paymentInfoUrl?: string;
+  /** 綠界頁面「返回商店」按鈕的目的地（ATM 取號完成頁等） */
+  clientBackUrl?: string;
 }
 
-/** 產生綠界 AioCheckOut/V5 自動送出表單 HTML */
+/** 產生綠界 AioCheckOut/V5 自動送出表單 HTML（付款方式全開） */
 export function createPaymentFormHtml(opts: CreatePaymentFormOptions): string {
   const config = getConfig();
 
@@ -115,9 +119,12 @@ export function createPaymentFormHtml(opts: CreatePaymentFormOptions): string {
     ItemName: opts.itemName,
     ReturnURL: opts.returnUrl,
     OrderResultURL: opts.orderResultUrl,
-    ChoosePayment: 'Credit',
+    ChoosePayment: 'ALL',
     EncryptType: '1',
   };
+
+  if (opts.paymentInfoUrl) params.PaymentInfoURL = opts.paymentInfoUrl;
+  if (opts.clientBackUrl) params.ClientBackURL = opts.clientBackUrl;
 
   params.CheckMacValue = generateCheckMacValue(params);
 

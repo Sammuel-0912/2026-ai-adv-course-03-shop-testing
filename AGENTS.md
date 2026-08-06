@@ -43,7 +43,7 @@
 | POST | `/api/coupons/preview` | `{items: [{productId, quantity}], code?}` → `{data: {subtotal, discount, total, coupon?}}` | 200 |
 | POST | `/api/orders` | 需登入。`{items, couponCode?}` → `{data: Order}`（transaction 扣庫存＋建 pending 通知） | 201 |
 | GET | `/api/orders/:id` | 需登入（僅本人）→ `{data: Order}`（含 items） | 200 |
-| POST | `/api/orders/:id/checkout` | 需登入 → `{data: {html}}` 綠界自動送出表單 | 200 |
+| POST | `/api/orders/:id/checkout` | 需登入 → `{data: {html}}` 綠界自動送出表單（付款方式全開 `ALL`：信用卡／ATM 轉帳／超商等） | 200 |
 | POST | `/api/ecpay/notify` | 綠界 ReturnURL（server-to-server，本地開發打不到；僅驗 CheckMacValue 後回 `1\|OK`，不寫 DB） | 200 |
 | POST | `/api/ecpay/result` | 綠界 OrderResultURL（瀏覽器 form POST），**只 302 redirect** 回前端訂單頁，不寫 DB | 302 |
 | POST | `/api/orders/:id/check-payment` | 需登入。向綠界 QueryTradeInfo 查詢，`TradeStatus === '1'` → 更新 paid ＋建通知 | 200 |
