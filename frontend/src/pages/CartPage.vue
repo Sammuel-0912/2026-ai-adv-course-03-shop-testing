@@ -39,7 +39,8 @@ async function refreshPreview() {
         amounts.value = null
       }
     } else {
-      couponError.value = err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
+      couponError.value =
+        err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
     }
   } finally {
     loading.value = false
@@ -55,7 +56,8 @@ async function applyCoupon() {
     amounts.value = await previewCoupon({ items: cart.itemsPayload, code })
     cart.setCouponCode(code)
   } catch (err) {
-    couponError.value = err instanceof ApiError ? err.message : '套用優惠券失敗，請稍後再試'
+    couponError.value =
+      err instanceof ApiError ? err.message : '套用優惠券失敗，請稍後再試'
     if (cart.couponCode) cart.setCouponCode('')
     try {
       amounts.value = await previewCoupon({ items: cart.itemsPayload })
@@ -83,14 +85,14 @@ function onQuantityInput(productId: number, event: Event) {
 
 /** 前往結帳（未登入時由 router guard 導向登入頁） */
 function goCheckout() {
-  router.push('/checkout')
+  void router.push('/checkout')
 }
 
 // 品項變動（數量調整、移除）時重新試算
 watch(
   () => JSON.stringify(cart.itemsPayload),
   () => {
-    refreshPreview()
+    void refreshPreview()
   },
 )
 
@@ -101,9 +103,15 @@ onMounted(refreshPreview)
   <div>
     <h1 class="mb-6 text-2xl font-bold">購物車</h1>
 
-    <div v-if="cart.items.length === 0" class="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+    <div
+      v-if="cart.items.length === 0"
+      class="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center"
+    >
       <p class="text-gray-500">購物車是空的，快去逛逛吧！</p>
-      <RouterLink to="/" class="mt-4 inline-block rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700">
+      <RouterLink
+        to="/"
+        class="mt-4 inline-block rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+      >
         前往商品列表
       </RouterLink>
     </div>
@@ -167,7 +175,7 @@ onMounted(refreshPreview)
               data-testid="coupon-input"
               type="text"
               placeholder="輸入優惠券代碼"
-              class="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+              class="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm transition outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
             />
             <button
               type="button"
@@ -178,12 +186,25 @@ onMounted(refreshPreview)
               套用
             </button>
           </div>
-          <p v-if="couponError" data-testid="coupon-error" class="mt-2 text-sm text-red-600">
+          <p
+            v-if="couponError"
+            data-testid="coupon-error"
+            class="mt-2 text-sm text-red-600"
+          >
             {{ couponError }}
           </p>
-          <p v-else-if="cart.couponCode" data-testid="coupon-applied" class="mt-2 flex items-center gap-2 text-sm text-green-600">
+          <p
+            v-else-if="cart.couponCode"
+            data-testid="coupon-applied"
+            class="mt-2 flex items-center gap-2 text-sm text-green-600"
+          >
             已套用優惠券：{{ cart.couponCode }}
-            <button type="button" data-testid="remove-coupon" class="text-xs text-gray-400 underline hover:text-red-600" @click="removeCoupon">
+            <button
+              type="button"
+              data-testid="remove-coupon"
+              class="text-xs text-gray-400 underline hover:text-red-600"
+              @click="removeCoupon"
+            >
               取消
             </button>
           </p>
@@ -191,26 +212,38 @@ onMounted(refreshPreview)
 
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h2 class="mb-3 font-semibold">金額明細</h2>
-          <div v-if="amounts" class="space-y-2 text-sm" :class="{ 'opacity-60': loading }">
+          <div
+            v-if="amounts"
+            class="space-y-2 text-sm"
+            :class="{ 'opacity-60': loading }"
+          >
             <div class="flex items-center justify-between">
               <span class="text-gray-500">小計</span>
               <span class="flex items-baseline gap-1">
                 <span class="text-gray-400">NT$</span>
-                <span data-testid="subtotal" class="font-medium">{{ amounts.subtotal }}</span>
+                <span data-testid="subtotal" class="font-medium">{{
+                  amounts.subtotal
+                }}</span>
               </span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">折扣</span>
               <span class="flex items-baseline gap-1 text-green-600">
                 <span>−NT$</span>
-                <span data-testid="discount" class="font-medium">{{ amounts.discount }}</span>
+                <span data-testid="discount" class="font-medium">{{
+                  amounts.discount
+                }}</span>
               </span>
             </div>
-            <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base">
+            <div
+              class="flex items-center justify-between border-t border-gray-100 pt-2 text-base"
+            >
               <span class="font-semibold">總計</span>
               <span class="flex items-baseline gap-1 text-rose-600">
                 <span>NT$</span>
-                <span data-testid="total" class="text-lg font-bold">{{ amounts.total }}</span>
+                <span data-testid="total" class="text-lg font-bold">{{
+                  amounts.total
+                }}</span>
               </span>
             </div>
           </div>

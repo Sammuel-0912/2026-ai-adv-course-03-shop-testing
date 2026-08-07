@@ -24,7 +24,8 @@ function loadCart(): CartState {
       const parsed = JSON.parse(raw) as Partial<CartState>
       return {
         items: Array.isArray(parsed.items) ? parsed.items : [],
-        couponCode: typeof parsed.couponCode === 'string' ? parsed.couponCode : '',
+        couponCode:
+          typeof parsed.couponCode === 'string' ? parsed.couponCode : '',
       }
     }
   } catch {
@@ -40,7 +41,10 @@ export const useCartStore = defineStore('cart', {
     count: (state) => state.items.reduce((sum, item) => sum + item.quantity, 0),
     /** 給 API 的品項格式：{productId, quantity}[] */
     itemsPayload: (state): CartItemPayload[] =>
-      state.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      state.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
   },
   actions: {
     /** 寫回 localStorage */
@@ -51,8 +55,13 @@ export const useCartStore = defineStore('cart', {
       )
     },
     /** 加入商品（已存在則累加數量） */
-    add(product: { productId: number; name: string; price: number }, quantity = 1) {
-      const existing = this.items.find((item) => item.productId === product.productId)
+    add(
+      product: { productId: number; name: string; price: number },
+      quantity = 1,
+    ) {
+      const existing = this.items.find(
+        (item) => item.productId === product.productId,
+      )
       if (existing) {
         existing.quantity += quantity
       } else {

@@ -75,9 +75,7 @@ export interface CreateCouponPayload {
   isActive?: boolean
 }
 
-export type UpdateCouponPayload = Partial<
-  Omit<CreateCouponPayload, 'code'>
->
+export type UpdateCouponPayload = Partial<Omit<CreateCouponPayload, 'code'>>
 
 /** 優惠券試算結果：金額一律以後端回傳為準 */
 export interface PreviewResult {
@@ -87,7 +85,7 @@ export interface PreviewResult {
   coupon?: CouponInfo
 }
 
-export type OrderStatus = 'pending' | 'paid' | string
+export type OrderStatus = 'pending' | 'paid' | 'failed'
 
 export interface OrderItem {
   productId: number
@@ -138,7 +136,7 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
     message?: string
     error?: { code?: string; message?: string }
   }
-  let body: Envelope | null = null
+  let body: Envelope | null
   try {
     body = (await res.json()) as Envelope
   } catch {
@@ -157,7 +155,11 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 // ---------- 型別化 API 函式 ----------
 
 /** 註冊：POST /api/auth/register */
-export function register(payload: { email: string; password: string; name: string }): Promise<AuthResult> {
+export function register(payload: {
+  email: string
+  password: string
+  name: string
+}): Promise<AuthResult> {
   return request<AuthResult>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -165,7 +167,10 @@ export function register(payload: { email: string; password: string; name: strin
 }
 
 /** 登入：POST /api/auth/login */
-export function login(payload: { email: string; password: string }): Promise<AuthResult> {
+export function login(payload: {
+  email: string
+  password: string
+}): Promise<AuthResult> {
   return request<AuthResult>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -192,7 +197,10 @@ export function createCoupon(payload: CreateCouponPayload): Promise<Coupon> {
 }
 
 /** 更新優惠券（需管理者權限；code 與 usedCount 不可修改） */
-export function updateCoupon(id: number, payload: UpdateCouponPayload): Promise<Coupon> {
+export function updateCoupon(
+  id: number,
+  payload: UpdateCouponPayload,
+): Promise<Coupon> {
   return request<Coupon>(`/api/coupons/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -200,7 +208,10 @@ export function updateCoupon(id: number, payload: UpdateCouponPayload): Promise<
 }
 
 /** 優惠券試算：POST /api/coupons/preview（無券時也可呼叫取得 subtotal） */
-export function previewCoupon(payload: { items: CartItemPayload[]; code?: string }): Promise<PreviewResult> {
+export function previewCoupon(payload: {
+  items: CartItemPayload[]
+  code?: string
+}): Promise<PreviewResult> {
   return request<PreviewResult>('/api/coupons/preview', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -208,7 +219,10 @@ export function previewCoupon(payload: { items: CartItemPayload[]; code?: string
 }
 
 /** 建立訂單：POST /api/orders（需登入） */
-export function createOrder(payload: { items: CartItemPayload[]; couponCode?: string }): Promise<Order> {
+export function createOrder(payload: {
+  items: CartItemPayload[]
+  couponCode?: string
+}): Promise<Order> {
   return request<Order>('/api/orders', {
     method: 'POST',
     body: JSON.stringify(payload),

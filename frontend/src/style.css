@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* 全域基礎樣式 */
 body {
@@ -18,7 +18,7 @@ select {
 }
 
 /* 數字輸入框在各瀏覽器的外觀保持一致 */
-input[type="number"] {
+input[type='number'] {
   appearance: textfield;
 }
 
@@ -32,11 +32,11 @@ input[type="number"] {
   }
 
   .admin-page-kicker {
-    @apply font-mono text-[10px] uppercase tracking-[0.24em] text-[#6c704f];
+    @apply font-mono text-[10px] tracking-[0.24em] text-[#6c704f] uppercase;
   }
 
   .admin-field {
-    @apply w-full border border-[#171913]/35 bg-[#fffdf8] px-3.5 py-3 text-sm text-[#171913] outline-none transition placeholder:text-[#9a9b91] focus:border-[#171913] focus:shadow-[4px_4px_0_#d9ff57];
+    @apply w-full border border-[#171913]/35 bg-[#fffdf8] px-3.5 py-3 text-sm text-[#171913] transition outline-none placeholder:text-[#9a9b91] focus:border-[#171913] focus:shadow-[4px_4px_0_#d9ff57];
   }
 
   .admin-field-label {

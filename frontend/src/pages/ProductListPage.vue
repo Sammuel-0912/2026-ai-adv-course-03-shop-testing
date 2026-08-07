@@ -13,7 +13,8 @@ onMounted(async () => {
   try {
     products.value = await fetchProducts()
   } catch (err) {
-    errorMessage.value = err instanceof ApiError ? err.message : '載入商品失敗，請稍後再試'
+    errorMessage.value =
+      err instanceof ApiError ? err.message : '載入商品失敗，請稍後再試'
   } finally {
     loading.value = false
   }
@@ -30,10 +31,16 @@ function addToCart(product: Product) {
     <h1 class="mb-6 text-2xl font-bold">全部商品</h1>
 
     <p v-if="loading" class="text-gray-500">商品載入中…</p>
-    <p v-else-if="errorMessage" data-testid="products-error" class="text-red-600">
+    <p
+      v-else-if="errorMessage"
+      data-testid="products-error"
+      class="text-red-600"
+    >
       {{ errorMessage }}
     </p>
-    <p v-else-if="products.length === 0" class="text-gray-500">目前沒有商品。</p>
+    <p v-else-if="products.length === 0" class="text-gray-500">
+      目前沒有商品。
+    </p>
 
     <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <article
@@ -42,9 +49,13 @@ function addToCart(product: Product) {
         class="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
       >
         <h2 class="text-lg font-semibold">{{ product.name }}</h2>
-        <p class="mt-1 flex-1 text-sm text-gray-500">{{ product.description }}</p>
+        <p class="mt-1 flex-1 text-sm text-gray-500">
+          {{ product.description }}
+        </p>
         <div class="mt-4 flex items-center justify-between">
-          <span class="text-lg font-bold text-rose-600">NT$ {{ product.price }}</span>
+          <span class="text-lg font-bold text-rose-600"
+            >NT$ {{ product.price }}</span
+          >
           <span class="text-xs text-gray-400">庫存 {{ product.stock }}</span>
         </div>
         <button

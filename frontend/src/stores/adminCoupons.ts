@@ -20,12 +20,17 @@ export const useAdminCouponsStore = defineStore('adminCoupons', {
     errorMessage: '',
   }),
   getters: {
-    activeCount: (state) => state.coupons.filter((coupon) => coupon.isActive).length,
-    inactiveCount: (state) => state.coupons.filter((coupon) => !coupon.isActive).length,
-    totalUsed: (state) => state.coupons.reduce((sum, coupon) => sum + coupon.usedCount, 0),
-    exhaustedCount: (state) => state.coupons.filter(
-      (coupon) => coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit,
-    ).length,
+    activeCount: (state) =>
+      state.coupons.filter((coupon) => coupon.isActive).length,
+    inactiveCount: (state) =>
+      state.coupons.filter((coupon) => !coupon.isActive).length,
+    totalUsed: (state) =>
+      state.coupons.reduce((sum, coupon) => sum + coupon.usedCount, 0),
+    exhaustedCount: (state) =>
+      state.coupons.filter(
+        (coupon) =>
+          coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit,
+      ).length,
   },
   actions: {
     async loadCoupons(force = false) {
@@ -42,8 +47,10 @@ export const useAdminCouponsStore = defineStore('adminCoupons', {
           this.loaded = true
         } catch (error) {
           this.loaded = false
-          this.errorCode = error instanceof ApiError ? error.code : 'UNKNOWN_ERROR'
-          this.errorMessage = error instanceof ApiError ? error.message : '無法載入優惠券資料'
+          this.errorCode =
+            error instanceof ApiError ? error.code : 'UNKNOWN_ERROR'
+          this.errorMessage =
+            error instanceof ApiError ? error.message : '無法載入優惠券資料'
           throw error
         } finally {
           this.loading = false

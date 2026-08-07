@@ -1,6 +1,10 @@
 // 會員驗證 store：token / user 持久化到 localStorage（key 前綴 shop_）
 import { defineStore } from 'pinia'
-import { login as apiLogin, register as apiRegister, type User } from '../api/client'
+import {
+  login as apiLogin,
+  register as apiRegister,
+  type User,
+} from '../api/client'
 
 const TOKEN_KEY = 'shop_token'
 const USER_KEY = 'shop_user'

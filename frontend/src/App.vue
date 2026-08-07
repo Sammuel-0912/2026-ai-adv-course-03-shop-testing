@@ -9,12 +9,14 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const cart = useCartStore()
-const isAdminRoute = computed(() => route.matched.some((record) => record.meta.admin))
+const isAdminRoute = computed(() =>
+  route.matched.some((record) => record.meta.admin),
+)
 
 /** 登出後回到商品列表 */
 function handleLogout() {
   auth.logout()
-  router.push('/')
+  void router.push('/')
 }
 </script>
 
@@ -22,11 +24,21 @@ function handleLogout() {
   <RouterView v-if="isAdminRoute" />
 
   <div v-else class="flex min-h-screen flex-col">
-    <header class="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
-      <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <RouterLink to="/" class="text-xl font-bold text-rose-600">花漾商店</RouterLink>
+    <header
+      class="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur"
+    >
+      <nav
+        class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3"
+      >
+        <RouterLink to="/" class="text-xl font-bold text-rose-600"
+          >花漾商店</RouterLink
+        >
         <div class="flex items-center gap-5 text-sm">
-          <RouterLink to="/" class="text-gray-600 transition hover:text-rose-600">商品</RouterLink>
+          <RouterLink
+            to="/"
+            class="text-gray-600 transition hover:text-rose-600"
+            >商品</RouterLink
+          >
           <RouterLink
             to="/cart"
             data-testid="nav-cart"
@@ -37,7 +49,8 @@ function handleLogout() {
               v-if="cart.count > 0"
               data-testid="cart-count"
               class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 text-xs font-semibold text-white"
-            >{{ cart.count }}</span>
+              >{{ cart.count }}</span
+            >
           </RouterLink>
           <template v-if="auth.isLoggedIn">
             <RouterLink
@@ -46,7 +59,9 @@ function handleLogout() {
             >
               營運後台
             </RouterLink>
-            <span class="hidden text-gray-500 sm:inline">{{ auth.user?.name }}，您好</span>
+            <span class="hidden text-gray-500 sm:inline"
+              >{{ auth.user?.name }}，您好</span
+            >
             <button
               type="button"
               data-testid="logout-button"
@@ -71,7 +86,9 @@ function handleLogout() {
       <RouterView />
     </main>
 
-    <footer class="border-t border-gray-200 py-6 text-center text-xs text-gray-400">
+    <footer
+      class="border-t border-gray-200 py-6 text-center text-xs text-gray-400"
+    >
       花漾商店 — 測試教學課程範例
     </footer>
   </div>

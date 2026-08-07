@@ -15,9 +15,13 @@ async function handleSubmit(payload: CreateCouponPayload) {
   errorMessage.value = ''
   try {
     await store.createCoupon(payload)
-    router.push({ name: 'admin-coupons', query: { saved: 'created' } })
+    await router.push({
+      name: 'admin-coupons',
+      query: { saved: 'created' },
+    })
   } catch (error) {
-    errorMessage.value = error instanceof ApiError ? error.message : '建立優惠券失敗，請稍後再試'
+    errorMessage.value =
+      error instanceof ApiError ? error.message : '建立優惠券失敗，請稍後再試'
   } finally {
     submitting.value = false
   }
@@ -27,11 +31,24 @@ async function handleSubmit(payload: CreateCouponPayload) {
 <template>
   <div class="mx-auto max-w-[1280px] px-5 py-9 sm:px-8 lg:px-12 lg:py-12">
     <div class="mb-8 border-b border-[#171913] pb-7">
-      <RouterLink to="/admin/coupons" class="font-mono text-[10px] uppercase tracking-[.16em] text-[#6f7268] hover:text-[#171913]">← Back to coupons</RouterLink>
+      <RouterLink
+        to="/admin/coupons"
+        class="font-mono text-[10px] tracking-[.16em] text-[#6f7268] uppercase hover:text-[#171913]"
+        >← Back to coupons</RouterLink
+      >
       <p class="admin-page-kicker mt-6">Create / New coupon</p>
-      <h1 class="mt-2 font-serif text-4xl italic tracking-[-.03em] sm:text-6xl">建立優惠券</h1>
-      <p class="mt-4 max-w-2xl text-sm leading-7 text-[#65685f]">設定消費門檻、折扣規則與總使用額度。代碼建立後不可修改，請在送出前再次確認。</p>
+      <h1 class="mt-2 font-serif text-4xl tracking-[-.03em] italic sm:text-6xl">
+        建立優惠券
+      </h1>
+      <p class="mt-4 max-w-2xl text-sm leading-7 text-[#65685f]">
+        設定消費門檻、折扣規則與總使用額度。代碼建立後不可修改，請在送出前再次確認。
+      </p>
     </div>
-    <CouponForm mode="create" :submitting="submitting" :server-error="errorMessage" @submit="handleSubmit" />
+    <CouponForm
+      mode="create"
+      :submitting="submitting"
+      :server-error="errorMessage"
+      @submit="handleSubmit"
+    />
   </div>
 </template>

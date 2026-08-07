@@ -6,7 +6,10 @@ const props = defineProps<{ coupon: Coupon }>()
 
 const status = computed(() => {
   if (!props.coupon.isActive) return { label: '已停用', tone: 'inactive' }
-  if (props.coupon.usageLimit !== null && props.coupon.usedCount >= props.coupon.usageLimit) {
+  if (
+    props.coupon.usageLimit !== null &&
+    props.coupon.usedCount >= props.coupon.usageLimit
+  ) {
     return { label: '已用罄', tone: 'exhausted' }
   }
   return { label: '進行中', tone: 'active' }
@@ -33,7 +36,16 @@ const status = computed(() => {
   letter-spacing: 0.08em;
 }
 
-.coupon-status--active { color: #486d25; background: #ecf7d8; }
-.coupon-status--inactive { color: #77796f; background: #efeee9; }
-.coupon-status--exhausted { color: #934436; background: #f8e9e4; }
+.coupon-status--active {
+  color: #486d25;
+  background: #ecf7d8;
+}
+.coupon-status--inactive {
+  color: #77796f;
+  background: #efeee9;
+}
+.coupon-status--exhausted {
+  color: #934436;
+  background: #f8e9e4;
+}
 </style>

@@ -20,10 +20,12 @@ async function handleSubmit() {
   submitting.value = true
   try {
     await auth.login(email.value, password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    router.push(redirect)
+    const redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    await router.push(redirect)
   } catch (err) {
-    errorMessage.value = err instanceof ApiError ? err.message : '登入失敗，請稍後再試'
+    errorMessage.value =
+      err instanceof ApiError ? err.message : '登入失敗，請稍後再試'
   } finally {
     submitting.value = false
   }
@@ -36,7 +38,11 @@ async function handleSubmit() {
       <h1 class="mb-6 text-2xl font-bold">會員登入</h1>
       <form class="space-y-4" @submit.prevent="handleSubmit">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-600" for="login-email">Email</label>
+          <label
+            class="mb-1 block text-sm font-medium text-gray-600"
+            for="login-email"
+            >Email</label
+          >
           <input
             id="login-email"
             v-model="email"
@@ -45,11 +51,15 @@ async function handleSubmit() {
             required
             autocomplete="email"
             placeholder="you@example.com"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 transition outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-600" for="login-password">密碼</label>
+          <label
+            class="mb-1 block text-sm font-medium text-gray-600"
+            for="login-password"
+            >密碼</label
+          >
           <input
             id="login-password"
             v-model="password"
@@ -58,10 +68,14 @@ async function handleSubmit() {
             required
             autocomplete="current-password"
             placeholder="請輸入密碼"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 transition outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
           />
         </div>
-        <p v-if="errorMessage" data-testid="login-error" class="text-sm text-red-600">
+        <p
+          v-if="errorMessage"
+          data-testid="login-error"
+          class="text-sm text-red-600"
+        >
           {{ errorMessage }}
         </p>
         <button
@@ -75,7 +89,10 @@ async function handleSubmit() {
       </form>
       <p class="mt-5 text-center text-sm text-gray-500">
         還沒有帳號？
-        <RouterLink :to="{ path: '/register', query: route.query }" class="font-medium text-rose-600 hover:underline">
+        <RouterLink
+          :to="{ path: '/register', query: route.query }"
+          class="font-medium text-rose-600 hover:underline"
+        >
           前往註冊
         </RouterLink>
       </p>

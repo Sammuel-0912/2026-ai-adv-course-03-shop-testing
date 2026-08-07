@@ -66,7 +66,8 @@ onMounted(async () => {
       startPolling()
     }
   } catch (err) {
-    errorMessage.value = err instanceof ApiError ? err.message : '載入訂單失敗，請稍後再試'
+    errorMessage.value =
+      err instanceof ApiError ? err.message : '載入訂單失敗，請稍後再試'
   } finally {
     loading.value = false
   }
@@ -85,7 +86,9 @@ onUnmounted(stopPolling)
     </p>
 
     <div v-else-if="order" class="space-y-4">
-      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-500">訂單編號</p>
@@ -94,19 +97,24 @@ onUnmounted(stopPolling)
           <span
             data-testid="order-status"
             class="rounded-full px-3 py-1 text-sm font-medium"
-            :class="order.status === 'paid'
-              ? 'bg-green-100 text-green-700'
-              : order.status === 'pending'
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-gray-100 text-gray-600'"
-          >{{ statusLabel }}</span>
+            :class="
+              order.status === 'paid'
+                ? 'bg-green-100 text-green-700'
+                : order.status === 'pending'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-gray-100 text-gray-600'
+            "
+            >{{ statusLabel }}</span
+          >
         </div>
         <p v-if="order.status === 'pending'" class="mt-3 text-xs text-gray-400">
           正在確認付款結果，完成付款後狀態會自動更新…
         </p>
       </section>
 
-      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
         <h2 class="mb-3 font-semibold">訂單品項</h2>
         <ul class="divide-y divide-gray-100 text-sm">
           <li
@@ -118,12 +126,16 @@ onUnmounted(stopPolling)
               {{ item.name ?? `商品 #${item.productId}` }}
               <span class="text-gray-400">× {{ item.quantity }}</span>
             </span>
-            <span class="text-gray-600">NT$ {{ item.unitPrice * item.quantity }}</span>
+            <span class="text-gray-600"
+              >NT$ {{ item.unitPrice * item.quantity }}</span
+            >
           </li>
         </ul>
       </section>
 
-      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
         <h2 class="mb-3 font-semibold">金額明細</h2>
         <div class="space-y-2 text-sm">
           <div class="flex items-center justify-between">
@@ -134,9 +146,13 @@ onUnmounted(stopPolling)
             <span class="text-gray-500">折扣</span>
             <span class="text-green-600">−NT$ {{ order.discount }}</span>
           </div>
-          <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base">
+          <div
+            class="flex items-center justify-between border-t border-gray-100 pt-2 text-base"
+          >
             <span class="font-semibold">總計</span>
-            <span class="text-lg font-bold text-rose-600">NT$ {{ order.total }}</span>
+            <span class="text-lg font-bold text-rose-600"
+              >NT$ {{ order.total }}</span
+            >
           </div>
         </div>
         <p v-if="order.couponCode" class="mt-3 text-sm text-green-600">
@@ -144,7 +160,10 @@ onUnmounted(stopPolling)
         </p>
       </section>
 
-      <RouterLink to="/" class="inline-block text-sm text-rose-600 hover:underline">
+      <RouterLink
+        to="/"
+        class="inline-block text-sm text-rose-600 hover:underline"
+      >
         ← 繼續購物
       </RouterLink>
     </div>

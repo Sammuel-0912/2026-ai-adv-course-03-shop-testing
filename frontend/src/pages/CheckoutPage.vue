@@ -21,7 +21,7 @@ const submitting = ref(false)
 onMounted(async () => {
   // 空購物車直接回購物車頁
   if (cart.items.length === 0) {
-    router.replace('/cart')
+    await router.replace('/cart')
     return
   }
   try {
@@ -30,7 +30,8 @@ onMounted(async () => {
       code: cart.couponCode || undefined,
     })
   } catch (err) {
-    errorMessage.value = err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
+    errorMessage.value =
+      err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
   }
 })
 
@@ -56,7 +57,8 @@ async function handleCheckout() {
     document.close()
   } catch (err) {
     // 例如庫存不足（INSUFFICIENT_STOCK）、優惠券不可用等
-    errorMessage.value = err instanceof ApiError ? err.message : '結帳失敗，請稍後再試'
+    errorMessage.value =
+      err instanceof ApiError ? err.message : '結帳失敗，請稍後再試'
     submitting.value = false
   }
 }
@@ -68,7 +70,9 @@ async function handleCheckout() {
 
     <div class="space-y-4">
       <!-- 品項摘要 -->
-      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
         <h2 class="mb-3 font-semibold">訂單品項</h2>
         <ul class="divide-y divide-gray-100 text-sm">
           <li
@@ -80,7 +84,9 @@ async function handleCheckout() {
               {{ item.name }}
               <span class="text-gray-400">× {{ item.quantity }}</span>
             </span>
-            <span class="text-gray-600">NT$ {{ item.price * item.quantity }}</span>
+            <span class="text-gray-600"
+              >NT$ {{ item.price * item.quantity }}</span
+            >
           </li>
         </ul>
         <p v-if="cart.couponCode" class="mt-3 text-sm text-green-600">
@@ -89,34 +95,50 @@ async function handleCheckout() {
       </section>
 
       <!-- 金額摘要（後端 preview 回傳值） -->
-      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+      >
         <h2 class="mb-3 font-semibold">金額明細</h2>
         <div v-if="amounts" class="space-y-2 text-sm">
           <div class="flex items-center justify-between">
             <span class="text-gray-500">小計</span>
             <span class="flex items-baseline gap-1">
               <span class="text-gray-400">NT$</span>
-              <span data-testid="subtotal" class="font-medium">{{ amounts.subtotal }}</span>
+              <span data-testid="subtotal" class="font-medium">{{
+                amounts.subtotal
+              }}</span>
             </span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-500">折扣</span>
             <span class="flex items-baseline gap-1 text-green-600">
               <span>−NT$</span>
-              <span data-testid="discount" class="font-medium">{{ amounts.discount }}</span>
+              <span data-testid="discount" class="font-medium">{{
+                amounts.discount
+              }}</span>
             </span>
           </div>
-          <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base">
+          <div
+            class="flex items-center justify-between border-t border-gray-100 pt-2 text-base"
+          >
             <span class="font-semibold">應付總額</span>
             <span class="flex items-baseline gap-1 text-rose-600">
               <span>NT$</span>
-              <span data-testid="total" class="text-lg font-bold">{{ amounts.total }}</span>
+              <span data-testid="total" class="text-lg font-bold">{{
+                amounts.total
+              }}</span>
             </span>
           </div>
         </div>
-        <p v-else-if="!errorMessage" class="text-sm text-gray-400">金額試算中…</p>
+        <p v-else-if="!errorMessage" class="text-sm text-gray-400">
+          金額試算中…
+        </p>
 
-        <p v-if="errorMessage" data-testid="checkout-error" class="mt-3 text-sm text-red-600">
+        <p
+          v-if="errorMessage"
+          data-testid="checkout-error"
+          class="mt-3 text-sm text-red-600"
+        >
           {{ errorMessage }}
         </p>
 
@@ -129,7 +151,9 @@ async function handleCheckout() {
         >
           {{ submitting ? '處理中…' : '確認付款' }}
         </button>
-        <p class="mt-2 text-center text-xs text-gray-400">將導向綠界金流完成付款</p>
+        <p class="mt-2 text-center text-xs text-gray-400">
+          將導向綠界金流完成付款
+        </p>
       </section>
     </div>
   </div>
