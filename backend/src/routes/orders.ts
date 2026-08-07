@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { auth } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { validateBody } from '../middleware/validate.js';
+import { CreateOrderRequestSchema } from '../openapi/schemas/order.js';
 import {
   calculateOrderAmount,
   generateMerchantTradeNo,
@@ -97,22 +99,12 @@ function getOwnOrder(orderId: string, userId: number): OrderRow {
 }
 
 // 建立訂單（transaction：扣庫存＋建訂單＋建 pending 通知）
-router.post('/', (req, res) => {
+router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
   const userId = req.userId!;
-  const { items, couponCode } = (req.body ?? {}) as {
-    items?: Array<{ productId?: number; quantity?: number }>;
+  const { items, couponCode } = req.body as {
+    items: Array<{ productId: number; quantity: number }>;
     couponCode?: string;
   };
-
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new AppError(400, 'VALIDATION_ERROR', 'items 不可為空');
-  }
-
-  for (const item of items) {
-    if (!item || typeof item.productId !== 'number' || typeof item.quantity !== 'number' || item.quantity <= 0) {
-      throw new AppError(400, 'VALIDATION_ERROR', 'items 格式不正確');
-    }
-  }
 
   // 優惠券在 transaction 外先查（只查 is_active=1）
   let coupon: CouponRow | null = null;
@@ -139,15 +131,15 @@ router.post('/', (req, res) => {
       if (!product) {
         throw new AppError(404, 'PRODUCT_NOT_FOUND', '商品不存在');
       }
-      if (product.stock < item.quantity!) {
+      if (product.stock < item.quantity) {
         throw new AppError(409, 'INSUFFICIENT_STOCK', `商品「${product.name}」庫存不足`);
       }
 
       updateStock.run(item.quantity, product.id);
-      pricingItems.push({ price: product.price, quantity: item.quantity! });
+      pricingItems.push({ price: product.price, quantity: item.quantity });
       resolvedItems.push({
         productId: product.id,
-        quantity: item.quantity!,
+        quantity: item.quantity,
         unitPrice: product.price,
       });
     }

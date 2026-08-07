@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { validateBody } from '../middleware/validate.js';
+import { RegisterRequestSchema } from '../openapi/schemas/auth.js';
 
 const router = Router();
 
@@ -13,8 +15,6 @@ interface UserRow {
   name: string;
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /** 簽發 JWT（payload 只放 userId） */
 function signToken(userId: number): string {
   return jwt.sign({ userId }, process.env.JWT_SECRET ?? 'course-demo-secret', {
@@ -22,23 +22,13 @@ function signToken(userId: number): string {
   });
 }
 
-// 註冊
-router.post('/register', (req, res) => {
-  const { email, password, name } = (req.body ?? {}) as {
-    email?: string;
-    password?: string;
-    name?: string;
+// 註冊（欄位驗證交給 RegisterRequestSchema，name 已在 schema 內 trim）
+router.post('/register', validateBody(RegisterRequestSchema), (req, res) => {
+  const { email, password, name } = req.body as {
+    email: string;
+    password: string;
+    name: string;
   };
-
-  if (!email || !EMAIL_REGEX.test(email)) {
-    throw new AppError(400, 'VALIDATION_ERROR', 'Email 格式不正確');
-  }
-  if (!password || password.length < 8) {
-    throw new AppError(400, 'VALIDATION_ERROR', '密碼長度至少 8 碼');
-  }
-  if (!name || !name.trim()) {
-    throw new AppError(400, 'VALIDATION_ERROR', '姓名為必填');
-  }
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
   if (existing) {
@@ -48,14 +38,14 @@ router.post('/register', (req, res) => {
   const passwordHash = bcrypt.hashSync(password, 10);
   const result = db
     .prepare('INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)')
-    .run(email, passwordHash, name.trim());
+    .run(email, passwordHash, name);
 
   const userId = Number(result.lastInsertRowid);
 
   res.status(201).json({
     data: {
       token: signToken(userId),
-      user: { id: userId, email, name: name.trim() },
+      user: { id: userId, email, name },
     },
     message: '註冊成功',
   });

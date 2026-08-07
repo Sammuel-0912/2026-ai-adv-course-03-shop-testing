@@ -1,0 +1,1075 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "花漾商店 API",
+    "version": "1.0.0",
+    "description": "前後端分離電商服務的後端 API，作為「AI 測試實戰」課程的基礎案例。\n\n## 回應格式\n\n- 成功：`{ \"data\": <payload>, \"message\": <string, 可省略> }`\n- 失敗：`{ \"error\": { \"code\": <UPPER_SNAKE_CASE>, \"message\": <string> } }`\n\n## 金額規則\n\n所有金額為整數 TWD。`subtotal = Σ(price × quantity)`。\n\n1. 低消門檻：`subtotal >= minSpend` 才可折抵（含等於）。\n2. `discount = min(floor(subtotal × percentOff / 100), maxDiscount)`\n   —— 先算百分比、無條件捨去、再套折抵上限。\n3. `total = subtotal - discount`，必為正整數（綠界 TotalAmount 只收整數）。\n\n試算與建立訂單共用同一個 `calculateOrderAmount()` 純函式，伺服器端重算金額，\n不信任前端傳入的價格。"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "本機開發"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "健康檢查"
+    },
+    {
+      "name": "Auth",
+      "description": "註冊與登入"
+    },
+    {
+      "name": "Products",
+      "description": "商品"
+    },
+    {
+      "name": "Coupons",
+      "description": "優惠券"
+    },
+    {
+      "name": "Orders",
+      "description": "訂單與付款"
+    },
+    {
+      "name": "ECPay",
+      "description": "綠界金流回呼（非前端呼叫）"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "登入或註冊取得的 JWT，放在 `Authorization: Bearer <token>`"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "VALIDATION_ERROR"
+              },
+              "message": {
+                "type": "string",
+                "example": "欄位格式不正確"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "測試會員"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "AuthResult": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "token",
+          "user"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "12345678"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "測試會員"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "12345678"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "經典玫瑰花束"
+          },
+          "description": {
+            "type": "string",
+            "example": "典雅紅玫瑰花束，傳遞浪漫心意"
+          },
+          "price": {
+            "type": "integer",
+            "example": 980,
+            "description": "單價（整數 TWD）"
+          },
+          "stock": {
+            "type": "integer",
+            "example": 50
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-01-01 00:00:00"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price",
+          "stock",
+          "createdAt"
+        ]
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "example": 1
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 2
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CouponRule": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "WELCOME10"
+          },
+          "percentOff": {
+            "type": "integer",
+            "example": 10,
+            "description": "折扣百分比"
+          }
+        },
+        "required": [
+          "code",
+          "percentOff"
+        ]
+      },
+      "PreviewResult": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "integer",
+            "example": 1960
+          },
+          "discount": {
+            "type": "integer",
+            "example": 196
+          },
+          "total": {
+            "type": "integer",
+            "example": 1764
+          },
+          "coupon": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CouponRule"
+              },
+              {
+                "nullable": true,
+                "description": "未帶券或券無效時為 null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "subtotal",
+          "discount",
+          "total",
+          "coupon"
+        ]
+      },
+      "CouponPreviewRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            },
+            "minItems": 1
+          },
+          "code": {
+            "type": "string",
+            "example": "WELCOME10"
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "經典玫瑰花束"
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          },
+          "unitPrice": {
+            "type": "integer",
+            "example": 980
+          }
+        },
+        "required": [
+          "productId",
+          "name",
+          "quantity",
+          "unitPrice"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "userId": {
+            "type": "integer",
+            "example": 1
+          },
+          "couponId": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1
+          },
+          "subtotal": {
+            "type": "integer",
+            "example": 1960
+          },
+          "discount": {
+            "type": "integer",
+            "example": 196
+          },
+          "total": {
+            "type": "integer",
+            "example": 1764
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "failed"
+            ],
+            "example": "pending"
+          },
+          "merchantTradeNo": {
+            "type": "string",
+            "nullable": true,
+            "example": "ORD20260807120000A1B",
+            "description": "每次 checkout 重新產生"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-08-07 12:00:00"
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "couponId",
+          "subtotal",
+          "discount",
+          "total",
+          "status",
+          "merchantTradeNo",
+          "createdAt",
+          "paidAt",
+          "items"
+        ]
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            },
+            "minItems": 1
+          },
+          "couponCode": {
+            "type": "string",
+            "example": "WELCOME10"
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CheckoutResult": {
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "綠界自動送出的付款表單 HTML，前端直接寫入 document 即可跳轉"
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "EcpayCallbackForm": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "example": {
+          "MerchantID": "3002607",
+          "MerchantTradeNo": "ORD20260807120000A1B",
+          "RtnCode": "1",
+          "TradeAmt": "1764",
+          "CheckMacValue": "A1B2C3..."
+        }
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "健康檢查",
+        "description": "CI 以 wait-on 輪詢此端點，確認後端已就緒。",
+        "responses": {
+          "200": {
+            "description": "服務正常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "註冊會員",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "註冊成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthResult"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "操作成功"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_ERROR` —— Email 格式不正確／密碼長度至少 8 碼／姓名為必填",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`EMAIL_TAKEN` —— 此 Email 已被註冊",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "登入",
+        "description": "缺欄位、帳號不存在、密碼錯誤一律回 401，不洩漏帳號是否存在。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登入成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthResult"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "操作成功"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`INVALID_CREDENTIALS` —— 帳號或密碼錯誤",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "商品列表",
+        "responses": {
+          "200": {
+            "description": "商品列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/coupons/preview": {
+      "post": {
+        "tags": [
+          "Coupons"
+        ],
+        "summary": "優惠券試算",
+        "description": "伺服器端重算金額，不信任前端傳入的價格。與建立訂單共用同一個 `calculateOrderAmount()` 純函式。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "試算結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PreviewResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_ERROR` —— items 格式問題；`COUPON_MIN_SPEND_NOT_MET` —— 未達低消門檻",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`PRODUCT_NOT_FOUND` —— 商品不存在；`COUPON_NOT_FOUND` —— 優惠券不存在或已停用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "建立訂單",
+        "description": "單一 transaction 內扣庫存、建立訂單與 pending 通知；任一步失敗全部 rollback。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "訂單建立成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "操作成功"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_ERROR`／`COUPON_MIN_SPEND_NOT_MET`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED` —— 請先登入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`PRODUCT_NOT_FOUND`／`COUPON_NOT_FOUND`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`INSUFFICIENT_STOCK` —— 商品庫存不足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "訂單詳情",
+        "description": "僅能查詢本人訂單；非本人一律回 404，避免洩漏其他人的訂單是否存在。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "1"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "訂單詳情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`ORDER_NOT_FOUND` —— 訂單不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/checkout": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "建立綠界付款表單",
+        "description": "每次呼叫都會重新產生 `merchantTradeNo`（綠界不接受重複編號）。付款方式全開（`ChoosePayment: ALL`）。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "1"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "綠界自動送出表單",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CheckoutResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`ORDER_NOT_FOUND`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`ORDER_NOT_PAYABLE` —— 訂單狀態不可付款",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/check-payment": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "查詢綠界付款狀態",
+        "description": "付款狀態的唯一來源是綠界 QueryTradeInfo。`TradeStatus === \"1\"` 時更新為 paid 並建立通知。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "1"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "最新訂單狀態",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "操作成功"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`ORDER_NOT_FOUND`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`ORDER_NOT_PAYABLE` —— 此訂單尚未進行結帳",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`INTERNAL_SERVER_ERROR` —— 綠界查詢失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ecpay/notify": {
+      "post": {
+        "tags": [
+          "ECPay"
+        ],
+        "summary": "綠界 ReturnURL（server-to-server）",
+        "description": "綠界背景通知。僅驗證 CheckMacValue 後回純文字，**不寫 DB**。本地開發時綠界打不到 localhost，屬預期行為。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/EcpayCallbackForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CheckMacValue 驗證通過",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "1|OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "CheckMacValue 驗證失敗",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "0|CheckMacValueError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ecpay/result": {
+      "post": {
+        "tags": [
+          "ECPay"
+        ],
+        "summary": "綠界 OrderResultURL（瀏覽器 form POST）",
+        "description": "只做 302 轉址回前端訂單頁，**不寫 DB**。付款狀態由訂單頁輪詢 check-payment 取得。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/EcpayCallbackForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "轉址回前端；查無對應訂單時轉回前端首頁",
+            "headers": {
+              "Location": {
+                "description": "前端訂單頁網址",
+                "schema": {
+                  "type": "string",
+                  "example": "http://localhost:5173/orders/1?payment=pending"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

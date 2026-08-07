@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { validateBody } from '../middleware/validate.js';
+import { CouponPreviewRequestSchema } from '../openapi/schemas/coupon.js';
 import { calculateOrderAmount, type PricingItem } from '../services/pricing.js';
 
 const router = Router();
@@ -20,22 +22,14 @@ interface CouponRow {
 }
 
 // 優惠券試算（與建立訂單共用 calculateOrderAmount 純函式）
-router.post('/preview', (req, res) => {
-  const { items, code } = (req.body ?? {}) as {
-    items?: Array<{ productId?: number; quantity?: number }>;
+router.post('/preview', validateBody(CouponPreviewRequestSchema), (req, res) => {
+  const { items, code } = req.body as {
+    items: Array<{ productId: number; quantity: number }>;
     code?: string;
   };
 
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new AppError(400, 'VALIDATION_ERROR', 'items 不可為空');
-  }
-
   // 逐項查商品取得單價（伺服器端重算，不信任前端金額）
   const pricingItems: PricingItem[] = items.map((item) => {
-    if (!item || typeof item.productId !== 'number' || typeof item.quantity !== 'number' || item.quantity <= 0) {
-      throw new AppError(400, 'VALIDATION_ERROR', 'items 格式不正確');
-    }
-
     const product = db.prepare('SELECT id, price FROM products WHERE id = ?').get(item.productId) as
       | ProductRow
       | undefined;
