@@ -5,6 +5,12 @@ import { AppError } from '../middleware/errorHandler.js';
 import { validateBody } from '../middleware/validate.js';
 import { CreateOrderRequestSchema } from '../openapi/schemas/order.js';
 import {
+  consumeCoupon,
+  findUsableCoupon,
+  toCouponRule,
+  type CouponRow,
+} from '../services/coupons.js';
+import {
   calculateOrderAmount,
   generateMerchantTradeNo,
   type PricingItem,
@@ -21,15 +27,6 @@ interface ProductRow {
   name: string;
   price: number;
   stock: number;
-}
-
-interface CouponRow {
-  id: number;
-  code: string;
-  percent_off: number;
-  max_discount: number;
-  min_spend: number;
-  is_active: number;
 }
 
 interface OrderRow {
@@ -106,16 +103,9 @@ router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
     couponCode?: string;
   };
 
-  // 優惠券在 transaction 外先查（只查 is_active=1）
-  let coupon: CouponRow | null = null;
-  if (couponCode) {
-    coupon = (db.prepare('SELECT * FROM coupons WHERE code = ? AND is_active = 1').get(couponCode) ??
-      null) as CouponRow | null;
-
-    if (!coupon) {
-      throw new AppError(404, 'COUPON_NOT_FOUND', '優惠券不存在或已停用');
-    }
-  }
+  // 優惠券在 transaction 外先做快檢（不存在／停用／已用罄），
+  // 讓券的問題比庫存不足更早回報；權威的額度判定在 transaction 內的 consumeCoupon()。
+  const coupon: CouponRow | null = couponCode ? findUsableCoupon(couponCode) : null;
 
   const createOrder = db.transaction(() => {
     const pricingItems: PricingItem[] = [];
@@ -147,10 +137,13 @@ router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
     // 金額一律經過 calculateOrderAmount 純函式（與 preview 共用）
     const { subtotal, discount, total } = calculateOrderAmount(
       pricingItems,
-      coupon
-        ? { percentOff: coupon.percent_off, maxDiscount: coupon.max_discount, minSpend: coupon.min_spend }
-        : null
+      coupon ? toCouponRule(coupon) : null
     );
+
+    // 扣一次使用額度（條件式 UPDATE，額度被搶光時拋 409 並讓整筆 transaction rollback）
+    if (coupon) {
+      consumeCoupon(coupon.id);
+    }
 
     const orderResult = db
       .prepare(

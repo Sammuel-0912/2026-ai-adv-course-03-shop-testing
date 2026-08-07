@@ -13,7 +13,16 @@ import {
   UserSchema,
 } from './schemas/auth.js';
 import { ProductSchema } from './schemas/product.js';
-import { CouponPreviewRequestSchema, CouponRuleSchema, PreviewResultSchema } from './schemas/coupon.js';
+import {
+  CouponCodePathParamSchema,
+  CouponListQuerySchema,
+  CouponPreviewRequestSchema,
+  CouponRuleSchema,
+  CouponSchema,
+  CreateCouponRequestSchema,
+  PreviewResultSchema,
+  UpdateCouponRequestSchema,
+} from './schemas/coupon.js';
 import { CartItemSchema } from './schemas/cart.js';
 import {
   CheckoutResultSchema,
@@ -38,8 +47,11 @@ const COMPONENTS: Array<[string, z.ZodTypeAny]> = [
   ['Product', ProductSchema],
   ['CartItem', CartItemSchema],
   ['CouponRule', CouponRuleSchema],
+  ['Coupon', CouponSchema],
   ['PreviewResult', PreviewResultSchema],
   ['CouponPreviewRequest', CouponPreviewRequestSchema],
+  ['CreateCouponRequest', CreateCouponRequestSchema],
+  ['UpdateCouponRequest', UpdateCouponRequestSchema],
   ['OrderItem', OrderItemSchema],
   ['Order', OrderSchema],
   ['CreateOrderRequest', CreateOrderRequestSchema],
@@ -128,6 +140,68 @@ registry.registerPath({
 // --------------------------------------------------------------- Coupons
 
 registry.registerPath({
+  method: 'get',
+  path: '/api/coupons',
+  tags: ['Coupons'],
+  summary: '優惠券列表',
+  description: '預設只列出啟用中的優惠券。帶 `includeInactive=true` 可一併列出已停用的券（需管理者）。',
+  request: { query: CouponListQuerySchema },
+  responses: {
+    200: json('優惠券列表', success(z.array(CouponSchema))),
+    401: fail('`UNAUTHORIZED` —— 帶 `includeInactive=true` 但未登入'),
+    403: fail('`FORBIDDEN` —— 帶 `includeInactive=true` 但非管理者'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/coupons/{code}',
+  tags: ['Coupons'],
+  summary: '單張優惠券詳情',
+  description: '已停用的券視同不存在，回 404。',
+  request: { params: CouponCodePathParamSchema },
+  responses: {
+    200: json('優惠券詳情', success(CouponSchema)),
+    404: fail('`COUPON_NOT_FOUND` —— 優惠券不存在或已停用'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/coupons',
+  tags: ['Coupons'],
+  summary: '建立優惠券（管理者）',
+  security: secured,
+  request: { body: body(CreateCouponRequestSchema) },
+  responses: {
+    201: json('建立成功', successWithMessage(CouponSchema)),
+    400: fail('`VALIDATION_ERROR`'),
+    401: fail('`UNAUTHORIZED`'),
+    403: fail('`FORBIDDEN` —— 需要管理者權限'),
+    409: fail('`COUPON_CODE_TAKEN` —— 此優惠券代碼已存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/coupons/{id}',
+  tags: ['Coupons'],
+  summary: '更新優惠券（管理者）',
+  description:
+    '`code` 與 `usedCount` 不可修改。停用請把 `isActive` 設為 `false`；不提供硬刪除，' +
+    '因為 `orders.coupon_id` 會參照優惠券，刪除會讓歷史訂單失去券資訊。',
+  security: secured,
+  request: { params: IdPathParamSchema, body: body(UpdateCouponRequestSchema) },
+  responses: {
+    200: json('更新成功', successWithMessage(CouponSchema)),
+    400: fail('`VALIDATION_ERROR`'),
+    401: fail('`UNAUTHORIZED`'),
+    403: fail('`FORBIDDEN` —— 需要管理者權限'),
+    404: fail('`COUPON_NOT_FOUND`'),
+  },
+});
+
+registry.registerPath({
   method: 'post',
   path: '/api/coupons/preview',
   tags: ['Coupons'],
@@ -139,6 +213,7 @@ registry.registerPath({
     200: json('試算結果', success(PreviewResultSchema)),
     400: fail('`VALIDATION_ERROR` —— items 格式問題；`COUPON_MIN_SPEND_NOT_MET` —— 未達低消門檻'),
     404: fail('`PRODUCT_NOT_FOUND` —— 商品不存在；`COUPON_NOT_FOUND` —— 優惠券不存在或已停用'),
+    409: fail('`COUPON_USAGE_LIMIT_REACHED` —— 此優惠券已達使用次數上限'),
   },
 });
 
@@ -149,7 +224,8 @@ registry.registerPath({
   path: '/api/orders',
   tags: ['Orders'],
   summary: '建立訂單',
-  description: '單一 transaction 內扣庫存、建立訂單與 pending 通知；任一步失敗全部 rollback。',
+  description:
+    '單一 transaction 內扣庫存、扣優惠券額度、建立訂單與 pending 通知；任一步失敗全部 rollback。',
   security: secured,
   request: { body: body(CreateOrderRequestSchema) },
   responses: {
@@ -157,7 +233,7 @@ registry.registerPath({
     400: fail('`VALIDATION_ERROR`／`COUPON_MIN_SPEND_NOT_MET`'),
     401: fail('`UNAUTHORIZED` —— 請先登入'),
     404: fail('`PRODUCT_NOT_FOUND`／`COUPON_NOT_FOUND`'),
-    409: fail('`INSUFFICIENT_STOCK` —— 商品庫存不足'),
+    409: fail('`INSUFFICIENT_STOCK` —— 商品庫存不足；`COUPON_USAGE_LIMIT_REACHED` —— 券已達使用上限'),
   },
 });
 

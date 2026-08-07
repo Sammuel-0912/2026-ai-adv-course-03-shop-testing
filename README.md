@@ -28,10 +28,21 @@ pnpm dev        # http://localhost:5173
 
 資料庫於後端啟動時自動建表與 seed（SQLite 檔案在 `backend/data/`，不入版控）。
 
+## API 文件
+
+後端啟動後開 **http://localhost:3001/api-docs**（Swagger UI），原始文件在 http://localhost:3001/openapi.json。
+
+文件由 `backend/src/openapi/` 的 zod schema 產生，同一份 schema 也負責 request 驗證。
+契約異動請改 schema 後執行 `pnpm openapi:generate`，不要手改 `backend/openapi.json`。
+
 ## 測試帳號與資料（seed）
 
 - 會員：`user@example.com` / `12345678`
-- 優惠券：`WELCOME10`（9 折、折抵上限 300、低消 1000）
+- 管理者：`admin@example.com` / `12345678`（優惠券管理端點需要）
+- 優惠券：
+  - `WELCOME10`（9 折、折抵上限 300、低消 1000、不限次數）
+  - `LIMITED1`（同上，但**只能用一次**，用來示範額度用罄）
+  - `DISABLED10`（已停用）
 - 綠界 staging 測試卡：`4311-9522-2222-2222`，有效期限任意未來日期，CVC 任意，3D 驗證碼 `1234`
 
 ## 付款方式
