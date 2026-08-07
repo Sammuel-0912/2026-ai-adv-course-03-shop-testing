@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { auth } from '../middleware/auth.js';
+import { auth, requireAdmin } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { validateBody } from '../middleware/validate.js';
 import { CreateOrderRequestSchema } from '../openapi/schemas/order.js';
@@ -96,7 +96,7 @@ function getOwnOrder(orderId: string, userId: number): OrderRow {
 }
 
 // 後台訂單列表：新到舊排序，並附上各筆訂單品項
-router.get('/', (req, res) => {
+router.get('/', requireAdmin, (req, res) => {
   const orders = db
     .prepare('SELECT * FROM orders ORDER BY created_at DESC, id DESC')
     .all() as OrderRow[];
