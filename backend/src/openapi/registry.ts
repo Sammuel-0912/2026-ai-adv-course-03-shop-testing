@@ -244,7 +244,9 @@ registry.registerPath({
   request: { body: body(CreateOrderRequestSchema) },
   responses: {
     201: json('訂單建立成功', successWithMessage(OrderSchema)),
-    400: fail('`VALIDATION_ERROR`／`COUPON_MIN_SPEND_NOT_MET`'),
+    400: fail(
+      '`VALIDATION_ERROR` —— 配送地址為必填；`COUPON_MIN_SPEND_NOT_MET` —— 未達低消門檻'
+    ),
     401: fail('`UNAUTHORIZED` —— 請先登入'),
     404: fail('`PRODUCT_NOT_FOUND`／`COUPON_NOT_FOUND`'),
     409: fail('`INSUFFICIENT_STOCK` —— 商品庫存不足；`COUPON_USAGE_LIMIT_REACHED` —— 券已達使用上限'),

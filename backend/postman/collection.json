@@ -1876,7 +1876,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    },\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    }\n  ]\n}",
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"shippingAddress\": \"台北市信義區市府路 1 號\",\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    },\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"shippingAddress\": \"台北市信義區市府路 1 號\",\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    }\n  ]\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -1997,7 +1997,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2029,7 +2029,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2045,12 +2045,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  },\n  \"message\": \"操作成功\"\n}",
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"shippingAddress\": \"台北市信義區市府路 1 號\",\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  },\n  \"message\": \"操作成功\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
             {
-              "name": "`VALIDATION_ERROR`／`COUPON_MIN_SPEND_NOT_MET`",
+              "name": "`VALIDATION_ERROR` —— 配送地址為必填；`COUPON_MIN_SPEND_NOT_MET` —— 未達低消門檻",
               "originalRequest": {
                 "url": {
                   "path": [
@@ -2072,7 +2072,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2115,7 +2115,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2158,7 +2158,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2201,7 +2201,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"couponCode\": \"WELCOME10\"\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": \"台北市信義區市府路 1 號\",\n  \"couponCode\": \"WELCOME10\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2326,7 +2326,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  }\n}",
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"shippingAddress\": \"台北市信義區市府路 1 號\",\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  }\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -2745,7 +2745,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  },\n  \"message\": \"操作成功\"\n}",
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"userId\": 1,\n    \"couponId\": 1,\n    \"shippingAddress\": \"台北市信義區市府路 1 號\",\n    \"subtotal\": 1960,\n    \"discount\": 196,\n    \"total\": 1764,\n    \"status\": \"pending\",\n    \"merchantTradeNo\": \"ORD20260807120000A1B\",\n    \"createdAt\": \"2026-08-07 12:00:00\",\n    \"paidAt\": null,\n    \"items\": [\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      },\n      {\n        \"productId\": 1,\n        \"name\": \"經典玫瑰花束\",\n        \"quantity\": 2,\n        \"unitPrice\": 980\n      }\n    ]\n  },\n  \"message\": \"操作成功\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },

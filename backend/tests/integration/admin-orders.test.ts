@@ -8,7 +8,10 @@ describe('admin order list authorization', () => {
     return request(app)
       .post('/api/orders')
       .set('Authorization', `Bearer ${token}`)
-      .send({ items: [{ productId: 1, quantity: 1 }] })
+      .send({
+        items: [{ productId: 1, quantity: 1 }],
+        shippingAddress: '台北市信義區市府路 1 號',
+      })
       .expect(201);
   }
 
@@ -27,6 +30,7 @@ describe('admin order list authorization', () => {
         id: created.body.data.id,
         userId: created.body.data.userId,
         total: 980,
+        shippingAddress: '台北市信義區市府路 1 號',
         items: [expect.objectContaining({ productId: 1, quantity: 1 })],
       }),
     ]);

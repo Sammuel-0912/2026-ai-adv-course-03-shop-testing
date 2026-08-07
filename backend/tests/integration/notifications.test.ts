@@ -21,7 +21,10 @@ describe('notification database worker', () => {
     await request(app)
       .post('/api/orders')
       .set('Authorization', `Bearer ${token}`)
-      .send({ items: [{ productId: 1, quantity: 1 }] })
+      .send({
+        items: [{ productId: 1, quantity: 1 }],
+        shippingAddress: '台北市信義區市府路 1 號',
+      })
       .expect(201);
 
     expect(processPendingNotifications()).toBe(1);

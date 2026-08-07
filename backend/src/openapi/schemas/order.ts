@@ -15,6 +15,7 @@ export const OrderSchema = z
     id: z.number().int().openapi({ example: 1 }),
     userId: z.number().int().openapi({ example: 1 }),
     couponId: z.number().int().nullable().openapi({ example: 1 }),
+    shippingAddress: z.string().openapi({ example: '台北市信義區市府路 1 號' }),
     subtotal: z.number().int().openapi({ example: 1960 }),
     discount: z.number().int().openapi({ example: 196 }),
     total: z.number().int().openapi({ example: 1764 }),
@@ -32,6 +33,12 @@ export const OrderSchema = z
 export const CreateOrderRequestSchema = z
   .object({
     items: CartItemsSchema,
+    shippingAddress: z
+      .string({ error: '請輸入配送地址' })
+      .trim()
+      .min(1, '請輸入配送地址')
+      .max(200, '配送地址不可超過 200 字')
+      .openapi({ example: '台北市信義區市府路 1 號' }),
     couponCode: z.string().optional().openapi({ example: 'WELCOME10' }),
   })
   .openapi('CreateOrderRequest');

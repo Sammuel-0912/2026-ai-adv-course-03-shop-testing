@@ -33,6 +33,7 @@ interface OrderRow {
   id: number;
   user_id: number;
   coupon_id: number | null;
+  shipping_address: string;
   subtotal: number;
   discount: number;
   total: number;
@@ -67,6 +68,7 @@ function serializeOrder(order: OrderRow) {
     id: order.id,
     userId: order.user_id,
     couponId: order.coupon_id,
+    shippingAddress: order.shipping_address,
     subtotal: order.subtotal,
     discount: order.discount,
     total: order.total,
@@ -107,8 +109,9 @@ router.get('/', requireAdmin, (req, res) => {
 // 建立訂單（transaction：扣庫存＋建訂單＋建 pending 通知）
 router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
   const userId = req.userId!;
-  const { items, couponCode } = req.body as {
+  const { items, shippingAddress, couponCode } = req.body as {
     items: Array<{ productId: number; quantity: number }>;
+    shippingAddress: string;
     couponCode?: string;
   };
 
@@ -156,10 +159,11 @@ router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
 
     const orderResult = db
       .prepare(
-        `INSERT INTO orders (user_id, coupon_id, subtotal, discount, total, status)
-         VALUES (?, ?, ?, ?, ?, 'pending')`
+        `INSERT INTO orders
+           (user_id, coupon_id, shipping_address, subtotal, discount, total, status)
+         VALUES (?, ?, ?, ?, ?, ?, 'pending')`
       )
-      .run(userId, coupon?.id ?? null, subtotal, discount, total);
+      .run(userId, coupon?.id ?? null, shippingAddress, subtotal, discount, total);
 
     const orderId = Number(orderResult.lastInsertRowid);
 

@@ -58,6 +58,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     coupon_id INTEGER,
+    shipping_address TEXT NOT NULL,
     subtotal INTEGER NOT NULL,
     discount INTEGER NOT NULL,
     total INTEGER NOT NULL,
@@ -102,6 +103,7 @@ function ensureColumn(table: string, column: string, definition: string): void {
 ensureColumn('users', 'role', "role TEXT NOT NULL DEFAULT 'member'");
 ensureColumn('coupons', 'usage_limit', 'usage_limit INTEGER');
 ensureColumn('coupons', 'used_count', 'used_count INTEGER NOT NULL DEFAULT 0');
+ensureColumn('orders', 'shipping_address', "shipping_address TEXT NOT NULL DEFAULT ''");
 
 // 商品 seed：僅當 products 為空時執行（避免覆蓋開發中被改動的庫存）
 const productCount = db.prepare('SELECT COUNT(*) AS count FROM products').get() as { count: number };

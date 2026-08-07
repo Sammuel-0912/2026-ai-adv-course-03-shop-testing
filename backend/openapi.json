@@ -468,6 +468,10 @@
             "nullable": true,
             "example": 1
           },
+          "shippingAddress": {
+            "type": "string",
+            "example": "台北市信義區市府路 1 號"
+          },
           "subtotal": {
             "type": "integer",
             "example": 1960
@@ -515,6 +519,7 @@
           "id",
           "userId",
           "couponId",
+          "shippingAddress",
           "subtotal",
           "discount",
           "total",
@@ -535,13 +540,20 @@
             },
             "minItems": 1
           },
+          "shippingAddress": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "台北市信義區市府路 1 號"
+          },
           "couponCode": {
             "type": "string",
             "example": "WELCOME10"
           }
         },
         "required": [
-          "items"
+          "items",
+          "shippingAddress"
         ]
       },
       "CheckoutResult": {
@@ -1237,7 +1249,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_ERROR`／`COUPON_MIN_SPEND_NOT_MET`",
+            "description": "`VALIDATION_ERROR` —— 配送地址為必填；`COUPON_MIN_SPEND_NOT_MET` —— 未達低消門檻",
             "content": {
               "application/json": {
                 "schema": {
