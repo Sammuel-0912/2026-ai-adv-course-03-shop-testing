@@ -15,8 +15,10 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "test:e2e:install": "playwright install chromium",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
     "preview": "vite preview"
   },
   "dependencies": {
