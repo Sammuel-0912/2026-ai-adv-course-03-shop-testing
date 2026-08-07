@@ -54,6 +54,31 @@ export interface CouponInfo {
   minSpend?: number
 }
 
+/** 管理端優惠券資料（對齊 OpenAPI Coupon schema） */
+export interface Coupon {
+  id: number
+  code: string
+  percentOff: number
+  maxDiscount: number
+  minSpend: number
+  usageLimit: number | null
+  usedCount: number
+  isActive: boolean
+}
+
+export interface CreateCouponPayload {
+  code: string
+  percentOff: number
+  maxDiscount: number
+  minSpend: number
+  usageLimit?: number | null
+  isActive?: boolean
+}
+
+export type UpdateCouponPayload = Partial<
+  Omit<CreateCouponPayload, 'code'>
+>
+
 /** 優惠券試算結果：金額一律以後端回傳為準 */
 export interface PreviewResult {
   subtotal: number
@@ -150,6 +175,28 @@ export function login(payload: { email: string; password: string }): Promise<Aut
 /** 商品列表：GET /api/products */
 export function fetchProducts(): Promise<Product[]> {
   return request<Product[]>('/api/products')
+}
+
+/** 優惠券列表；管理端帶 includeInactive=true 取得完整資料 */
+export function fetchCoupons(includeInactive = false): Promise<Coupon[]> {
+  const query = includeInactive ? '?includeInactive=true' : ''
+  return request<Coupon[]>(`/api/coupons${query}`)
+}
+
+/** 建立優惠券（需管理者權限） */
+export function createCoupon(payload: CreateCouponPayload): Promise<Coupon> {
+  return request<Coupon>('/api/coupons', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/** 更新優惠券（需管理者權限；code 與 usedCount 不可修改） */
+export function updateCoupon(id: number, payload: UpdateCouponPayload): Promise<Coupon> {
+  return request<Coupon>(`/api/coupons/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
 }
 
 /** 優惠券試算：POST /api/coupons/preview（無券時也可呼叫取得 subtotal） */

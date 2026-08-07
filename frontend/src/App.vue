@@ -1,12 +1,15 @@
 <script setup lang="ts">
 // 全站外框：頂部導覽列 + 路由出口
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useCartStore } from './stores/cart'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const cart = useCartStore()
+const isAdminRoute = computed(() => route.matched.some((record) => record.meta.admin))
 
 /** 登出後回到商品列表 */
 function handleLogout() {
@@ -16,7 +19,9 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <RouterView v-if="isAdminRoute" />
+
+  <div v-else class="flex min-h-screen flex-col">
     <header class="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <RouterLink to="/" class="text-xl font-bold text-rose-600">花漾商店</RouterLink>
@@ -35,6 +40,12 @@ function handleLogout() {
             >{{ cart.count }}</span>
           </RouterLink>
           <template v-if="auth.isLoggedIn">
+            <RouterLink
+              to="/admin"
+              class="hidden text-gray-600 transition hover:text-rose-600 sm:inline"
+            >
+              營運後台
+            </RouterLink>
             <span class="hidden text-gray-500 sm:inline">{{ auth.user?.name }}，您好</span>
             <button
               type="button"

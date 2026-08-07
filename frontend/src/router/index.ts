@@ -37,6 +37,33 @@ const router = createRouter({
       component: () => import('../pages/OrderDetailPage.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/admin',
+      component: () => import('../layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, admin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('../pages/admin/AdminDashboardPage.vue'),
+        },
+        {
+          path: 'coupons',
+          name: 'admin-coupons',
+          component: () => import('../pages/admin/AdminCouponsPage.vue'),
+        },
+        {
+          path: 'coupons/new',
+          name: 'admin-coupon-create',
+          component: () => import('../pages/admin/AdminCouponCreatePage.vue'),
+        },
+        {
+          path: 'coupons/:id/edit',
+          name: 'admin-coupon-edit',
+          component: () => import('../pages/admin/AdminCouponEditPage.vue'),
+        },
+      ],
+    },
   ],
 })
 

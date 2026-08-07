@@ -5,7 +5,41 @@ body {
   @apply bg-gray-50 text-gray-900 antialiased;
 }
 
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #d9ff57;
+  color: #171913;
+}
+
 /* 數字輸入框在各瀏覽器的外觀保持一致 */
 input[type="number"] {
   appearance: textfield;
+}
+
+@layer components {
+  .admin-primary-button {
+    @apply inline-flex items-center justify-center gap-2 border border-[#171913] bg-[#171913] px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#303428] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0;
+  }
+
+  .admin-secondary-button {
+    @apply inline-flex items-center justify-center gap-2 border border-[#171913] bg-transparent px-4 py-3 text-sm font-semibold text-[#171913] transition duration-200 hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .admin-page-kicker {
+    @apply font-mono text-[10px] uppercase tracking-[0.24em] text-[#6c704f];
+  }
+
+  .admin-field {
+    @apply w-full border border-[#171913]/35 bg-[#fffdf8] px-3.5 py-3 text-sm text-[#171913] outline-none transition placeholder:text-[#9a9b91] focus:border-[#171913] focus:shadow-[4px_4px_0_#d9ff57];
+  }
+
+  .admin-field-label {
+    @apply mb-2 block text-xs font-semibold text-[#4d5048];
+  }
 }
