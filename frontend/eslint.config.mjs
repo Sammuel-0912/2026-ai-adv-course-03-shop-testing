@@ -6,7 +6,12 @@ import { vueTsConfigs, withVueTs } from '@vue/eslint-config-typescript'
 const appConfig = await withVueTs(
   {
     name: 'project/ignores',
-    ignores: ['dist/**', 'coverage/**'],
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'playwright-report/**',
+      'test-results/**',
+    ],
   },
   js.configs.recommended,
   pluginVue.configs['flat/essential'],
@@ -18,7 +23,18 @@ export default [
   ...appConfig,
   {
     ...vueTsConfigs.disableTypeChecked[0],
-    name: 'project/vite-config-without-type-information',
-    files: ['vite.config.ts'],
+    name: 'project/config-and-e2e-without-type-information',
+    files: ['vite.config.ts', 'playwright.config.ts', 'e2e/**/*.{ts,mjs}'],
+  },
+  {
+    name: 'project/e2e-node-globals',
+    files: ['e2e/support/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        URLSearchParams: 'readonly',
+      },
+    },
   },
 ]
