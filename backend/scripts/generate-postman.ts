@@ -29,6 +29,25 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 const checkOnly = process.argv.includes('--check');
 
+/**
+ * 設定類變數的預設值（帳密來自 backend/src/db/index.ts 的 seed）。
+ * {{$timestamp}} 是 Postman 內建的動態變數，讓 collection 可以重複執行。
+ */
+const DEFAULTS: Record<string, string> = {
+  memberEmail: 'user@example.com',
+  memberPassword: '12345678',
+  adminEmail: 'admin@example.com',
+  adminPassword: '12345678',
+  newUserEmail: 'postman+{{$timestamp}}@example.com',
+  newUserPassword: '12345678',
+  newUserName: 'Postman 測試會員',
+  newCouponCode: 'POSTMAN{{$timestamp}}',
+  couponCode: 'WELCOME10',
+};
+
+/** 由 test script 於執行期填入，初始為空字串 */
+const RUNTIME_VARS = ['token', 'adminToken', 'orderId', 'couponId'];
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Json = any;
 
@@ -104,12 +123,22 @@ function useBearer(item: Json, variable: string): void {
   item.request.auth = { type: 'bearer', bearer: [{ key: 'token', value: `{{${variable}}}` }] };
 }
 
-/** 掛上「把回應欄位寫回 environment」的 script */
-function captureToEnv(item: Json, pairs: Record<string, string>, okCodes: number[]): void {
+/**
+ * 掛上「把回應欄位寫回變數」的 script。
+ *
+ * 寫入 collection variable 而非 environment：
+ *  - 沒有選取 environment 時 `pm.environment.set()` 會靜默失效，整條鏈就斷了。
+ *  - Postman 的變數優先序是 environment > collection，若兩邊都定義 token，
+ *    environment 的空字串會蓋掉 script 寫入的值。執行期變數只存在 collection
+ *    這一層，就沒有這個陷阱。
+ */
+function capture(item: Json, pairs: Record<string, string>, okCodes: number[]): void {
   const lines = [
     `if (${okCodes.map((c) => `pm.response.code === ${c}`).join(' || ')}) {`,
     '  const { data } = pm.response.json();',
-    ...Object.entries(pairs).map(([variable, field]) => `  pm.environment.set('${variable}', ${field});`),
+    ...Object.entries(pairs).map(
+      ([variable, field]) => `  pm.collectionVariables.set('${variable}', ${field});`
+    ),
     '}',
   ];
 
@@ -140,19 +169,19 @@ setBody(register, {
   password: '{{newUserPassword}}',
   name: '{{newUserName}}',
 });
-captureToEnv(register, { token: 'data.token' }, [201]);
+capture(register, { token: 'data.token' }, [201]);
 
 // 2) 登入（會員）→ token
 const login = find('POST /api/auth/login');
 login.name = '登入（會員）';
 setBody(login, { email: '{{memberEmail}}', password: '{{memberPassword}}' });
-captureToEnv(login, { token: 'data.token' }, [200]);
+capture(login, { token: 'data.token' }, [200]);
 
 // 3) 登入（管理者）→ adminToken。openapi 只有一條 login，複製一份改用管理者帳密，
 //    否則 collection 無法操作需要 admin 的優惠券端點。
 const adminLogin = duplicate(login, '登入（管理者）');
 setBody(adminLogin, { email: '{{adminEmail}}', password: '{{adminPassword}}' });
-captureToEnv(adminLogin, { adminToken: 'data.token' }, [200]);
+capture(adminLogin, { adminToken: 'data.token' }, [200]);
 
 // 4) 需登入的端點改用 {{token}}（原本是預設的 {{bearerToken}}）
 for (const item of allRequests) {
@@ -176,7 +205,7 @@ setBody(createCoupon, {
   usageLimit: 100,
   isActive: true,
 });
-captureToEnv(createCoupon, { couponId: 'data.id' }, [201]);
+capture(createCoupon, { couponId: 'data.id' }, [201]);
 
 // 7) 路徑參數改用 environment 變數
 usePathVariable(find('PATCH /api/coupons/:id'), 'id', 'couponId');
@@ -190,13 +219,21 @@ for (const key of [
 }
 
 // 8) 建立訂單：成功後把訂單 id 存起來給後面三支訂單端點用
-captureToEnv(find('POST /api/orders'), { orderId: 'data.id' }, [201]);
+capture(find('POST /api/orders'), { orderId: 'data.id' }, [201]);
 
-// 9) 收斂 id 與 baseUrl
+// 9) 收斂 id，並把預設值寫進 collection variable
 stripRandomIds(collection);
 collection.info._postman_id = COLLECTION_ID;
-// 保留 collection variable 當預設值；掛上 environment 時會被覆寫
-collection.variable = [{ key: 'baseUrl', value: 'http://localhost:3001', type: 'string' }];
+
+// collection 自帶一整組預設值，只匯入 collection、不掛 environment 也能從頭跑到尾。
+// 掛上 environment 時，同名的 environment 變數優先序較高，會覆寫這裡的值。
+// 執行期變數（token / adminToken / orderId / couponId）只定義在這一層，
+// environment 不要重複定義，否則空字串會蓋掉 script 寫入的值。
+collection.variable = [
+  { key: 'baseUrl', value: 'http://localhost:3001', type: 'string' },
+  ...Object.entries(DEFAULTS).map(([key, value]) => ({ key, value, type: 'string' })),
+  ...RUNTIME_VARS.map((key) => ({ key, value: '', type: 'string' })),
+];
 
 // ------------------------------------------------------------------------ 輸出
 

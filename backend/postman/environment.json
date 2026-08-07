@@ -18,7 +18,7 @@
     {
       "key": "memberPassword",
       "value": "12345678",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
@@ -30,7 +30,7 @@
     {
       "key": "adminPassword",
       "value": "12345678",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
@@ -42,7 +42,7 @@
     {
       "key": "newUserPassword",
       "value": "12345678",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
@@ -60,30 +60,6 @@
     {
       "key": "couponCode",
       "value": "WELCOME10",
-      "type": "default",
-      "enabled": true
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "secret",
-      "enabled": true
-    },
-    {
-      "key": "adminToken",
-      "value": "",
-      "type": "secret",
-      "enabled": true
-    },
-    {
-      "key": "orderId",
-      "value": "",
-      "type": "default",
-      "enabled": true
-    },
-    {
-      "key": "couponId",
-      "value": "",
       "type": "default",
       "enabled": true
     }

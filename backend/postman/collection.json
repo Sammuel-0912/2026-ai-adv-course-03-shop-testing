@@ -268,7 +268,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  const { data } = pm.response.json();",
-                  "  pm.environment.set('token', data.token);",
+                  "  pm.collectionVariables.set('token', data.token);",
                   "}"
                 ]
               }
@@ -418,7 +418,7 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "  const { data } = pm.response.json();",
-                  "  pm.environment.set('token', data.token);",
+                  "  pm.collectionVariables.set('token', data.token);",
                   "}"
                 ]
               }
@@ -568,7 +568,7 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "  const { data } = pm.response.json();",
-                  "  pm.environment.set('adminToken', data.token);",
+                  "  pm.collectionVariables.set('adminToken', data.token);",
                   "}"
                 ]
               }
@@ -1106,7 +1106,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  const { data } = pm.response.json();",
-                  "  pm.environment.set('couponId', data.id);",
+                  "  pm.collectionVariables.set('couponId', data.id);",
                   "}"
                 ]
               }
@@ -2082,7 +2082,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  const { data } = pm.response.json();",
-                  "  pm.environment.set('orderId', data.id);",
+                  "  pm.collectionVariables.set('orderId', data.id);",
                   "}"
                 ]
               }
@@ -3137,6 +3137,71 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "memberEmail",
+      "value": "user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "memberPassword",
+      "value": "12345678",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@example.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "12345678",
+      "type": "string"
+    },
+    {
+      "key": "newUserEmail",
+      "value": "postman+{{$timestamp}}@example.com",
+      "type": "string"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "12345678",
+      "type": "string"
+    },
+    {
+      "key": "newUserName",
+      "value": "Postman 測試會員",
+      "type": "string"
+    },
+    {
+      "key": "newCouponCode",
+      "value": "POSTMAN{{$timestamp}}",
+      "type": "string"
+    },
+    {
+      "key": "couponCode",
+      "value": "WELCOME10",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "couponId",
+      "value": "",
       "type": "string"
     }
   ],

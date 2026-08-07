@@ -63,8 +63,15 @@ src/
 - `openapi-to-postmanv2` 的原始輸出每次都帶新的隨機 UUID（`_postman_id` 與每個 response 的 `id`），所以 script 會把它們去掉並寫入固定的 `_postman_id`，`postman:check` 的漂移檢查才有意義。
 - script 只做**變數擷取**（登入存 token、建單存 orderId、建券存 couponId），**不加任何斷言** —— 契約斷言留給後續的 contract test 階段。
 - `openapi.json` 只有一條 `POST /api/auth/login`，script 會複製成「登入（會員）」與「登入（管理者）」兩個請求，分別寫入 `token` 與 `adminToken`；否則 collection 無法操作需要 admin 的優惠券端點。
-- environment 的 `newUserEmail`／`newCouponCode` 用 Postman 動態變數 `{{$timestamp}}` 產生唯一值，讓整份 collection 可以重複執行。
-- `orderId`／`couponId` 的預設值刻意留空，由執行期的擷取 script 填入。**不要給它們寫死的預設值** —— 若「建立優惠券」失敗，後面的 PATCH 會拿舊值去改到 `WELCOME10`（id 1），破壞課程的金額基準；留空時 PATCH 會安全地落到 404。
+- `newUserEmail`／`newCouponCode` 用 Postman 動態變數 `{{$timestamp}}` 產生唯一值，讓整份 collection 可以重複執行。
+
+### 變數分層（三個坑，動之前先讀）
+
+1. **collection variable 自帶完整預設值**（`scripts/generate-postman.ts` 的 `DEFAULTS`），只匯入 collection、不掛 environment 也能從頭跑到尾。environment 定義同名變數時優先序較高，會覆寫。
+2. **執行期變數（`token`／`adminToken`／`orderId`／`couponId`）只定義在 collection 這一層，environment 不可重複定義。** Postman 的優先序是 environment > collection，若 environment 也有 `token: ""`，空字串會蓋掉 script 寫入的值，整條鏈就斷了。
+3. **environment 不要用 `type: "secret"`。** Postman 匯入時不會帶入 secret 型別的值，使用者會看到空白欄位。這是課程的公開 seed 帳密，一律用 `default`。
+
+另外 `orderId`／`couponId` 的初始值刻意留空：若給寫死的 `1`，當「建立優惠券」失敗時後面的 PATCH 會改到 `WELCOME10`（id 1），破壞課程的金額基準；留空時 PATCH 會安全地落到 404。
 
 ## 給第 3 階段（契約測試）的備忘
 

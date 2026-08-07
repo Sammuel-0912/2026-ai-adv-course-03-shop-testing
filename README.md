@@ -36,7 +36,7 @@ pnpm dev        # http://localhost:5173
 
 ## Postman
 
-`backend/postman/` 內有由 `openapi.json` 產生的 collection 與對應的 environment，兩個檔案直接匯入 Postman 即可（記得在右上角選取「花漾商店 - 本機」environment）。
+`backend/postman/` 內有由 `openapi.json` 產生的 collection 與一份 environment。
 
 ```bash
 cd backend
@@ -44,7 +44,20 @@ pnpm openapi:generate   # zod schema → openapi.json
 pnpm postman:generate   # openapi.json → postman/collection.json
 ```
 
-environment 已帶好 `baseUrl` 與 seed 帳密（`memberEmail`／`adminEmail` 等）。跑「登入（會員）」「登入（管理者）」後會自動把 `token`／`adminToken` 寫回 environment，其餘請求即可直接使用；`orderId`／`couponId` 同樣由「建立訂單」「建立優惠券」自動填入。
+**只匯入 `collection.json` 就能直接跑**：`baseUrl` 與 seed 帳密（`user@example.com`／`admin@example.com`，密碼都是 `12345678`）已經寫在 collection 自己的 Variables 分頁裡。
+
+`environment.json` 是選用的，用途是覆寫上述預設值（例如換 `baseUrl` 指向別台機器、或換帳號測試）；匯入後記得在右上角選取「花漾商店 - 本機」。
+
+依序執行即可，變數會自動串起來：
+
+| 請求 | 自動寫入的變數 |
+| --- | --- |
+| 登入（會員） | `token` |
+| 登入（管理者） | `adminToken` |
+| 建立訂單 | `orderId` |
+| 建立優惠券 | `couponId` |
+
+這四個執行期變數只存在 collection 這一層，environment **刻意不定義**它們——Postman 的 environment 優先序較高，若在那裡放空值會蓋掉自動寫入的結果。
 
 **契約異動請改 zod schema 後重新產生，不要手改 `openapi.json` 與 `collection.json`。**
 
