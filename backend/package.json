@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "openapi:check": "tsx scripts/generate-openapi.ts --check",
+    "postman:generate": "tsx scripts/generate-postman.ts",
+    "postman:check": "tsx scripts/generate-postman.ts --check",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
@@ -39,6 +41,7 @@
     "@types/node": "^22.16.5",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
+    "openapi-to-postmanv2": "^6.3.2",
     "supertest": "^7.1.4",
     "swagger-parser": "^10.0.3",
     "tsx": "^4.20.3",

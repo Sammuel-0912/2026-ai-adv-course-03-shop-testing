@@ -33,7 +33,20 @@ pnpm dev        # http://localhost:5173
 後端啟動後開 **http://localhost:3001/api-docs**（Swagger UI），原始文件在 http://localhost:3001/openapi.json。
 
 文件由 `backend/src/openapi/` 的 zod schema 產生，同一份 schema 也負責 request 驗證。
-契約異動請改 schema 後執行 `pnpm openapi:generate`，不要手改 `backend/openapi.json`。
+
+## Postman
+
+`backend/postman/` 內有由 `openapi.json` 產生的 collection 與對應的 environment，兩個檔案直接匯入 Postman 即可（記得在右上角選取「花漾商店 - 本機」environment）。
+
+```bash
+cd backend
+pnpm openapi:generate   # zod schema → openapi.json
+pnpm postman:generate   # openapi.json → postman/collection.json
+```
+
+environment 已帶好 `baseUrl` 與 seed 帳密（`memberEmail`／`adminEmail` 等）。跑「登入（會員）」「登入（管理者）」後會自動把 `token`／`adminToken` 寫回 environment，其餘請求即可直接使用；`orderId`／`couponId` 同樣由「建立訂單」「建立優惠券」自動填入。
+
+**契約異動請改 zod schema 後重新產生，不要手改 `openapi.json` 與 `collection.json`。**
 
 ## 測試帳號與資料（seed）
 

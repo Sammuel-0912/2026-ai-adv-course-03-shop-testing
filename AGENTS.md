@@ -6,6 +6,7 @@
 - `backend/`：Express 5 + TypeScript 後端 API（better-sqlite3、JWT），ESM，tsx 執行。
 - `backend/src/openapi/`：zod schema 與 OpenAPI registry（API 契約的唯一真實來源）。
 - `backend/openapi.json`：由 zod schema 產生的 OpenAPI 3.0.3 文件（產物，不可手改）。
+- `backend/postman/`：由 `openapi.json` 產生的 Postman collection（產物，不可手改）與可自行編輯的 environment。
 - `.claude/skills/ecpay/`：綠界金流整合 skill（staging 測試環境）。
 - 前後端各自有 `package.json`、`.env`、`CLAUDE.md`，互相只透過 HTTP API 溝通。
 
@@ -18,6 +19,8 @@
 | `backend/` | `pnpm test` | Vitest |
 | `backend/` | `pnpm openapi:generate` | 由 zod schema 重產 `openapi.json` |
 | `backend/` | `pnpm openapi:check` | 檢查 `openapi.json` 是否與 zod schema 同步 |
+| `backend/` | `pnpm postman:generate` | 由 `openapi.json` 重產 `postman/collection.json` |
+| `backend/` | `pnpm postman:check` | 檢查 collection 是否與 `openapi.json` 同步 |
 | `frontend/` | `pnpm dev` | 啟動前端（http://localhost:5173） |
 | `frontend/` | `pnpm typecheck` | `vue-tsc --noEmit` |
 | `frontend/` | `pnpm build` | typecheck + vite build |
@@ -73,7 +76,7 @@
 ## 開發規則
 
 - 修改前先閱讀對應專案的 `package.json` 與 `CLAUDE.md`。
-- **API 契約異動流程**：先改 `backend/src/openapi/schemas/`（zod 是唯一真實來源）→ 執行 `pnpm openapi:generate` 重產 `backend/openapi.json` → 同步更新本檔的 API 契約表。**絕不手改 `openapi.json`**。
+- **API 契約異動流程**：先改 `backend/src/openapi/schemas/`（zod 是唯一真實來源）→ `pnpm openapi:generate` 重產 `backend/openapi.json` → `pnpm postman:generate` 重產 `backend/postman/collection.json` → 同步更新本檔的 API 契約表。**絕不手改 `openapi.json` 與 `collection.json`**；要調整請求內容請改 `scripts/generate-postman.ts`。
 - request 驗證一律透過 `validateBody(schema)` middleware，不要在 route 內手寫 `if` 檢查。
 - 資料庫欄位使用 **snake_case**；API JSON 欄位使用 **camelCase**。
 - `backend/src/app.ts` 只建立並 export app，**不 listen、不啟動背景任務**；`server.ts` 負責 listen 3001 與 `startNotificationWorker()`。
@@ -83,7 +86,7 @@
 
 ## 驗證方式
 
-- 修改 `backend/` 時：`pnpm typecheck`、`pnpm openapi:check` 與相關測試。
+- 修改 `backend/` 時：`pnpm typecheck`、`pnpm openapi:check`、`pnpm postman:check` 與相關測試。
 - 修改 `frontend/` 時：`pnpm typecheck`。
 - 局部驗證通過後，才執行完整測試或交給 CI。
 

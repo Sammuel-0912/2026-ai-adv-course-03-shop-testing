@@ -15,8 +15,12 @@
 
 ```
 openapi.json        # 產物：由 zod schema 產生的 OpenAPI 3.0.3 文件（不可手改）
+postman/
+├── collection.json # 產物：由 openapi.json 產生（不可手改）
+└── environment.json# 可自行編輯：baseUrl、帳密、執行期變數
 scripts/
-└── generate-openapi.ts   # 產生 + SwaggerParser 驗證；--check 做漂移檢查
+├── generate-openapi.ts   # 產生 + SwaggerParser 驗證；--check 做漂移檢查
+└── generate-postman.ts   # openapi.json → collection；--check 做漂移檢查
 src/
 ├── app.ts          # 建立並 export app（不 listen、不起背景任務）＋掛 /api-docs、/openapi.json
 ├── server.ts       # listen 3001 + startNotificationWorker()
@@ -52,6 +56,15 @@ src/
 - `role` 每次從 DB 查（`middleware/auth.ts` 的 `assertAdmin`），**不放進 JWT payload** —— 否則撤銷 admin 後舊 token 仍是管理者。
 - 不提供優惠券硬刪除：`orders.coupon_id` 會參照優惠券，改用 `PATCH` 設 `isActive: false`。
 - `db/index.ts` 的 `ensureColumn()` 是給既有 `dev.sqlite` 補欄位用的極簡 migration。SQLite 的 `ADD COLUMN` 不支援全部約束，所以 migration 版本不帶 CHECK，新建的 DB 才有；實際輸入一律由 zod 把關。帳號與優惠券 seed 是冪等的（依 email／code 判斷），商品 seed 仍只在 products 為空時執行。
+
+## Postman collection
+
+- **產生鏈**：zod schema → `pnpm openapi:generate` → `openapi.json` → `pnpm postman:generate` → `postman/collection.json`。collection 是產物，**不可手改**；要調整請求內容改 `scripts/generate-postman.ts`。
+- `openapi-to-postmanv2` 的原始輸出每次都帶新的隨機 UUID（`_postman_id` 與每個 response 的 `id`），所以 script 會把它們去掉並寫入固定的 `_postman_id`，`postman:check` 的漂移檢查才有意義。
+- script 只做**變數擷取**（登入存 token、建單存 orderId、建券存 couponId），**不加任何斷言** —— 契約斷言留給後續的 contract test 階段。
+- `openapi.json` 只有一條 `POST /api/auth/login`，script 會複製成「登入（會員）」與「登入（管理者）」兩個請求，分別寫入 `token` 與 `adminToken`；否則 collection 無法操作需要 admin 的優惠券端點。
+- environment 的 `newUserEmail`／`newCouponCode` 用 Postman 動態變數 `{{$timestamp}}` 產生唯一值，讓整份 collection 可以重複執行。
+- `orderId`／`couponId` 的預設值刻意留空，由執行期的擷取 script 填入。**不要給它們寫死的預設值** —— 若「建立優惠券」失敗，後面的 PATCH 會拿舊值去改到 `WELCOME10`（id 1），破壞課程的金額基準；留空時 PATCH 會安全地落到 404。
 
 ## 給第 3 階段（契約測試）的備忘
 

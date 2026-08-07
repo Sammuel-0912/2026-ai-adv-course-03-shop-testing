@@ -1,0 +1,91 @@
+{
+  "id": "3b7e1a94-6c52-4d08-8f31-7a2c9b4e5d60",
+  "name": "花漾商店 - 本機",
+  "_postman_variable_scope": "environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "memberEmail",
+      "value": "user@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "memberPassword",
+      "value": "12345678",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "adminPassword",
+      "value": "12345678",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "newUserEmail",
+      "value": "postman+{{$timestamp}}@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "newUserPassword",
+      "value": "12345678",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "newUserName",
+      "value": "Postman 測試會員",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "newCouponCode",
+      "value": "POSTMAN{{$timestamp}}",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "couponCode",
+      "value": "WELCOME10",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "couponId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ]
+}
