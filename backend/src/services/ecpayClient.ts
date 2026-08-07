@@ -3,7 +3,10 @@ import crypto from 'node:crypto';
 /** 綠界設定：延遲讀取 env，避免模組載入順序早於 dotenv */
 function getConfig() {
   const isStaging = (process.env.ECPAY_ENV ?? 'staging') !== 'production';
-  const baseUrl = isStaging ? 'https://payment-stage.ecpay.com.tw' : 'https://payment.ecpay.com.tw';
+  const defaultBaseUrl = isStaging
+    ? 'https://payment-stage.ecpay.com.tw'
+    : 'https://payment.ecpay.com.tw';
+  const baseUrl = (process.env.ECPAY_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
 
   return {
     merchantId: process.env.ECPAY_MERCHANT_ID ?? '3002607',
