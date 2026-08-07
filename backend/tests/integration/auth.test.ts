@@ -57,12 +57,16 @@ describe('auth routes', () => {
   it('requires a valid token for protected order routes', async () => {
     const missing = await request(app).get('/api/orders/1');
     expect(missing.status).toBe(401);
-    expect(missing.body.error.code).toBe('UNAUTHORIZED');
+    expect(missing.body).toEqual({
+      error: { code: 'UNAUTHORIZED', message: '請先登入' },
+    });
 
     const invalid = await request(app)
       .get('/api/orders/1')
       .set('Authorization', 'Bearer invalid-token');
     expect(invalid.status).toBe(401);
-    expect(invalid.body.error.code).toBe('UNAUTHORIZED');
+    expect(invalid.body).toEqual({
+      error: { code: 'UNAUTHORIZED', message: '登入憑證無效或已過期' },
+    });
   });
 });

@@ -17,6 +17,9 @@
 | `backend/` | `pnpm dev` | 啟動 API（http://localhost:3001，tsx watch） |
 | `backend/` | `pnpm typecheck` | `tsc --noEmit` |
 | `backend/` | `pnpm test` | Vitest |
+| `backend/` | `pnpm test:unit` | 只執行 Unit Test |
+| `backend/` | `pnpm test:integration` | 只執行 Integration Test |
+| `backend/` | `pnpm test:module coupon` | 依檔名篩選單一模組測試（模組名可替換） |
 | `backend/` | `pnpm openapi:generate` | 由 zod schema 重產 `openapi.json` |
 | `backend/` | `pnpm openapi:check` | 檢查 `openapi.json` 是否與 zod schema 同步 |
 | `backend/` | `pnpm postman:generate` | 由 `openapi.json` 重產 `postman/collection.json` |
