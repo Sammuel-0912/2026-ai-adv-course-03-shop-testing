@@ -67,8 +67,8 @@ describe('order routes and database transaction', () => {
     const created = await request(app)
       .post('/api/orders')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ items: [{ productId: 3, quantity: 1 }] })
-      .expect(201);
+      .send({ items: [{ productId: 3, quantity: 1 }] });
+    expect(created.status, JSON.stringify(created.body)).toBe(201);
 
     const other = await request(app).post('/api/auth/register').send({
       email: 'other-member@example.com',

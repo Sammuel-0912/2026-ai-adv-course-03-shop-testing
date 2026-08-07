@@ -15,6 +15,9 @@
     "postman:generate": "tsx scripts/generate-postman.ts",
     "postman:check": "tsx scripts/generate-postman.ts --check",
     "test": "vitest run --passWithNoTests",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:module": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
