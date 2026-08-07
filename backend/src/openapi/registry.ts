@@ -220,6 +220,20 @@ registry.registerPath({
 // ---------------------------------------------------------------- Orders
 
 registry.registerPath({
+  method: 'get',
+  path: '/api/orders',
+  tags: ['Orders'],
+  summary: '後台訂單列表（管理者）',
+  description: '列出全部會員訂單，供後台營運人員查看。',
+  security: secured,
+  responses: {
+    200: json('訂單列表', success(z.array(OrderSchema))),
+    401: fail('`UNAUTHORIZED` —— 請先登入'),
+    403: fail('`FORBIDDEN` —— 需要管理者權限'),
+  },
+});
+
+registry.registerPath({
   method: 'post',
   path: '/api/orders',
   tags: ['Orders'],

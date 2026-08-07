@@ -1809,6 +1809,154 @@
       },
       "item": [
         {
+          "name": "後台訂單列表（管理者）",
+          "request": {
+            "name": "後台訂單列表（管理者）",
+            "description": {
+              "content": "列出全部會員訂單，供後台營運人員查看。",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "orders"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "訂單列表",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "orders"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    },\n    {\n      \"id\": 1,\n      \"userId\": 1,\n      \"couponId\": 1,\n      \"subtotal\": 1960,\n      \"discount\": 196,\n      \"total\": 1764,\n      \"status\": \"pending\",\n      \"merchantTradeNo\": \"ORD20260807120000A1B\",\n      \"createdAt\": \"2026-08-07 12:00:00\",\n      \"paidAt\": null,\n      \"items\": [\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        },\n        {\n          \"productId\": 1,\n          \"name\": \"經典玫瑰花束\",\n          \"quantity\": 2,\n          \"unitPrice\": 980\n        }\n      ]\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "`UNAUTHORIZED` —— 請先登入",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "orders"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"欄位格式不正確\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "`FORBIDDEN` —— 需要管理者權限",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "orders"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"欄位格式不正確\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
           "name": "建立訂單",
           "request": {
             "name": "建立訂單",

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAdminCouponsStore } from '../stores/adminCoupons'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const coupons = useAdminCouponsStore()
 const mobileNavOpen = ref(false)
@@ -83,9 +84,20 @@ function retry() {
         <div class="admin-nav-disabled">
           <span>商品管理</span><span>規劃中</span>
         </div>
-        <div class="admin-nav-disabled">
-          <span>訂單管理</span><span>規劃中</span>
-        </div>
+        <RouterLink
+          to="/admin/orders"
+          active-class="admin-nav-active"
+          class="admin-nav-link"
+          @click="mobileNavOpen = false"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path
+              d="M5 3h14a2 2 0 0 1 2 2v16l-4-2-5 2-5-2-4 2V5a2 2 0 0 1 2-2Zm2 5v2h10V8H7Zm0 4v2h7v-2H7Z"
+            />
+          </svg>
+          <span>訂單管理</span>
+          <span class="ml-auto font-mono text-[10px] opacity-50">03</span>
+        </RouterLink>
         <div class="admin-nav-disabled">
           <span>會員管理</span><span>規劃中</span>
         </div>
@@ -148,6 +160,7 @@ function retry() {
             >API-backed console</span
           >
           <RouterLink
+            v-if="route.name !== 'admin-orders'"
             to="/admin/coupons/new"
             class="admin-primary-button py-2.5 text-xs"
           >

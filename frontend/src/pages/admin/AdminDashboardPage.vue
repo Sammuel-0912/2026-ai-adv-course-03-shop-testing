@@ -156,8 +156,9 @@ function usagePercent(used: number, limit: number | null) {
           <div class="system-row">
             <span>商品</span><span>GET LIST ONLY</span><strong>WAIT</strong>
           </div>
-          <div class="system-row">
-            <span>訂單</span><span>GET BY ID ONLY</span><strong>WAIT</strong>
+          <div class="system-row system-row--ready">
+            <span>訂單</span><span>GET LIST · GET BY ID</span
+            ><strong>READY</strong>
           </div>
           <div class="system-row">
             <span>會員</span><span>NO ADMIN API</span><strong>WAIT</strong>

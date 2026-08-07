@@ -63,6 +63,7 @@
 | PATCH | `/api/coupons/:id` | 需 admin。部分更新（**不可改 `code`／`usedCount`**）；停用改用 `{isActive: false}`，不提供硬刪除 | 200 |
 | POST | `/api/coupons/preview` | `{items: [{productId, quantity}], code?}` → `{data: {subtotal, discount, total, coupon}}`，`coupon` 為 `{code, percentOff, maxDiscount, minSpend}` 或 `null` | 200 |
 | POST | `/api/orders` | 需登入。`{items, couponCode?}` → `{data: Order}`（transaction 扣庫存＋建 pending 通知） | 201 |
+| GET | `/api/orders` | 需 admin。→ `{data: Order[]}`（後台訂單列表） | 200 |
 | GET | `/api/orders/:id` | 需登入（僅本人）→ `{data: Order}`（含 items） | 200 |
 | POST | `/api/orders/:id/checkout` | 需登入 → `{data: {html}}` 綠界自動送出表單（付款方式全開 `ALL`：信用卡／ATM 轉帳／超商等） | 200 |
 | POST | `/api/ecpay/notify` | 綠界 ReturnURL（server-to-server，本地開發打不到；僅驗 CheckMacValue 後回 `1\|OK`，不寫 DB） | 200 |

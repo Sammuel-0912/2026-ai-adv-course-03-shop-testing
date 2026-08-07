@@ -95,6 +95,15 @@ function getOwnOrder(orderId: string, userId: number): OrderRow {
   return order;
 }
 
+// 後台訂單列表：新到舊排序，並附上各筆訂單品項
+router.get('/', (req, res) => {
+  const orders = db
+    .prepare('SELECT * FROM orders ORDER BY created_at DESC, id DESC')
+    .all() as OrderRow[];
+
+  res.json({ data: orders.map(serializeOrder) });
+});
+
 // 建立訂單（transaction：扣庫存＋建訂單＋建 pending 通知）
 router.post('/', validateBody(CreateOrderRequestSchema), (req, res) => {
   const userId = req.userId!;

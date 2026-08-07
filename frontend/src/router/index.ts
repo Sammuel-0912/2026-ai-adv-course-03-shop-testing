@@ -62,6 +62,11 @@ const router = createRouter({
           name: 'admin-coupon-edit',
           component: () => import('../pages/admin/AdminCouponEditPage.vue'),
         },
+        {
+          path: 'orders',
+          name: 'admin-orders',
+          component: () => import('../pages/admin/AdminOrdersPage.vue'),
+        },
       ],
     },
   ],

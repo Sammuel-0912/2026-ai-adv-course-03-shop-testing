@@ -96,6 +96,8 @@ export interface OrderItem {
 
 export interface Order {
   id: number | string
+  userId: number
+  couponId?: number | null
   status: OrderStatus
   subtotal: number
   discount: number
@@ -103,6 +105,7 @@ export interface Order {
   couponCode?: string | null
   items?: OrderItem[]
   createdAt?: string
+  paidAt?: string | null
 }
 
 // ---------- fetch wrapper ----------
@@ -227,6 +230,11 @@ export function createOrder(payload: {
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+
+/** 後台訂單列表（需管理者權限） */
+export function fetchAdminOrders(): Promise<Order[]> {
+  return request<Order[]>('/api/orders')
 }
 
 /** 取得訂單：GET /api/orders/:id（需登入，僅本人） */

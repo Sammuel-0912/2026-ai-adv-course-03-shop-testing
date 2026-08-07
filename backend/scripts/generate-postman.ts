@@ -194,6 +194,7 @@ useBearer(find('POST /api/coupons'), 'adminToken');
 useBearer(find('PATCH /api/coupons/:id'), 'adminToken');
 // 券列表本身公開，但預設帶的 includeInactive=true 需要管理者權限
 useBearer(find('GET /api/coupons'), 'adminToken');
+useBearer(find('GET /api/orders'), 'adminToken');
 
 // 6) 建立優惠券：用 environment 的代碼，成功後把 id 存起來給 PATCH 用
 const createCoupon = find('POST /api/coupons');
