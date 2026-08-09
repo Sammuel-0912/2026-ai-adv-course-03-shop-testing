@@ -93,6 +93,12 @@
 - 修改 `frontend/` 時：`pnpm typecheck`。
 - 局部驗證通過後，才執行完整測試或交給 CI。
 
+## GitHub CI 自動檢視
+
+- 使用者要求 Push 後自動追蹤 CI 時，使用 `$github-ci-reviewer`，並以分支與 commit SHA 鎖定正確的 Workflow Run。
+- CI 成功前不可建立 PR；最多自動修正三次，完成或停止時必須關閉監看排程。
+- 不可直接修改或推送受保護分支，也不可自動合併 PR。
+
 ## 停止條件
 
 - 同一問題最多嘗試修正三次。
