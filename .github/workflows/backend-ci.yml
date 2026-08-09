@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: backend
+        working-directory: .
 
     steps:
       - name: Checkout repository
