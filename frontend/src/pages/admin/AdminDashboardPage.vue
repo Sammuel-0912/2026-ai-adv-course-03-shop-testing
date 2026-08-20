@@ -36,8 +36,7 @@ function usagePercent(used: number, limit: number | null) {
         </h1>
       </div>
       <p class="max-w-sm text-sm leading-7 text-[#5d6057]">
-        先讓每一張折扣券保持可控。數據直接來自後端管理
-        API，不在前端推測訂單營收。
+        先讓每一張折扣券保持可控。數據直接來自後端 API，不在前端推測訂單營收。
       </p>
     </div>
 
@@ -62,8 +61,10 @@ function usagePercent(used: number, limit: number | null) {
       </article>
       <article class="dashboard-stat">
         <span class="dashboard-stat__index">04 / ARCHIVE</span>
-        <strong>{{ store.inactiveCount.toString().padStart(2, '0') }}</strong>
-        <p>已停用優惠券</p>
+        <strong>{{
+          store.readOnly ? '—' : store.inactiveCount.toString().padStart(2, '0')
+        }}</strong>
+        <p>{{ store.readOnly ? '停用券資料未公開' : '已停用優惠券' }}</p>
       </article>
     </section>
 
@@ -97,10 +98,14 @@ function usagePercent(used: number, limit: number | null) {
             }}</span>
             <div>
               <RouterLink
+                v-if="!store.readOnly"
                 :to="`/admin/coupons/${coupon.id}/edit`"
                 class="font-mono text-sm font-bold tracking-wide hover:underline"
                 >{{ coupon.code }}</RouterLink
               >
+              <code v-else class="font-mono text-sm font-bold tracking-wide">{{
+                coupon.code
+              }}</code>
               <p class="mt-1 text-xs text-[#777a70]">
                 {{ coupon.percentOff }}% off · 上限 NT$
                 {{ coupon.maxDiscount.toLocaleString('zh-TW') }}

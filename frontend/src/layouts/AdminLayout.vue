@@ -160,7 +160,7 @@ function retry() {
             >API-backed console</span
           >
           <RouterLink
-            v-if="route.name !== 'admin-orders'"
+            v-if="route.name !== 'admin-orders' && !coupons.readOnly"
             to="/admin/coupons/new"
             class="admin-primary-button py-2.5 text-xs"
           >
@@ -169,9 +169,54 @@ function retry() {
         </div>
       </header>
 
-      <main class="min-h-[calc(100vh-4rem)]">
+      <section
+        v-if="coupons.readOnly"
+        class="border-b border-[#8d4c00] bg-[#ffc247] text-[#422600]"
+        role="status"
+        aria-label="教學用權限錯誤提醒"
+      >
         <div
-          v-if="coupons.loading && !coupons.loaded"
+          class="mx-auto grid max-w-[1440px] gap-3 px-5 py-4 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start lg:px-12"
+        >
+          <strong
+            class="w-fit shrink-0 border border-[#422600] bg-[#422600] px-3 py-1.5 font-mono text-[10px] tracking-[.16em] text-[#fff4d6] uppercase"
+          >
+            教學用・刻意展示的錯誤
+          </strong>
+          <div>
+            <p class="text-sm font-bold">
+              目前刻意讓一般會員進入後台，以觀察權限漏洞造成的資料暴露。
+            </p>
+            <div
+              class="mt-3 grid gap-2 border border-[#8d4c00] bg-[#fff1bd] p-3 text-xs sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start"
+            >
+              <span
+                class="w-fit bg-[#8d4c00] px-2 py-1 font-mono text-[9px] tracking-[.12em] text-white uppercase"
+                >目前失誤範圍・1 API</span
+              >
+              <p class="leading-5">
+                <code class="font-bold">GET /api/orders</code>
+                只驗證是否登入，沒有驗證管理者身分，因此一般會員也能取得全部會員的訂單資料。
+              </p>
+            </div>
+            <p class="mt-1 text-xs leading-5 text-[#6b3b00]">
+              正確開發時，不僅要驗證只有管理者才能進入後台；資料面與 API
+              也必須再次驗證只有管理者才能檢視。
+            </p>
+            <p class="mt-1 text-[11px] leading-5 text-[#7a470a]">
+              對照：優惠券管理 API 仍有管理者驗證；一般會員在此僅讀取公開的
+              <code class="font-bold">GET /api/coupons</code> 啟用券資料。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <main class="min-h-[calc(100vh-4rem)]">
+        <!-- 訂單頁由自己的 API 回應決定權限，避免優惠券 API 遮蔽訂單權限問題。 -->
+        <div
+          v-if="
+            route.name !== 'admin-orders' && coupons.loading && !coupons.loaded
+          "
           class="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12 lg:py-14"
         >
           <div class="mb-10 h-4 w-36 animate-pulse bg-[#171913]/10" />
@@ -188,7 +233,7 @@ function retry() {
         </div>
 
         <section
-          v-else-if="coupons.errorCode"
+          v-else-if="route.name !== 'admin-orders' && coupons.errorCode"
           class="grid min-h-[calc(100vh-4rem)] place-items-center px-5 py-12"
         >
           <div

@@ -89,7 +89,10 @@ function clearFilters() {
           </svg>
           重新整理
         </button>
-        <RouterLink to="/admin/coupons/new" class="admin-primary-button"
+        <RouterLink
+          v-if="!store.readOnly"
+          to="/admin/coupons/new"
+          class="admin-primary-button"
           >＋ 建立優惠券</RouterLink
         >
       </div>
@@ -212,9 +215,15 @@ function clearFilters() {
             </div>
           </dl>
           <RouterLink
+            v-if="!store.readOnly"
             :to="`/admin/coupons/${coupon.id}/edit`"
             class="admin-secondary-button w-full py-2.5"
             >編輯設定 <span aria-hidden="true">↗</span></RouterLink
+          >
+          <span
+            v-else
+            class="block border-t border-[#171913]/20 pt-3 text-center font-mono text-[10px] tracking-[.12em] text-[#777a70] uppercase"
+            >Read only</span
           >
         </article>
       </div>
@@ -232,7 +241,12 @@ function clearFilters() {
               <th class="px-5 py-4 font-medium">折扣內容</th>
               <th class="px-5 py-4 font-medium">消費門檻</th>
               <th class="px-5 py-4 font-medium">使用額度</th>
-              <th class="px-5 py-4 text-right font-medium">操作</th>
+              <th
+                v-if="!store.readOnly"
+                class="px-5 py-4 text-right font-medium"
+              >
+                操作
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -279,7 +293,7 @@ function clearFilters() {
                 </div>
                 <p v-else class="mt-1 text-xs text-[#8a8d83]">無使用次數限制</p>
               </td>
-              <td class="px-5 py-5 text-right">
+              <td v-if="!store.readOnly" class="px-5 py-5 text-right">
                 <RouterLink
                   :to="`/admin/coupons/${coupon.id}/edit`"
                   class="inline-flex items-center gap-2 border-b border-[#171913] pb-1 text-xs font-semibold hover:text-[#62811f]"

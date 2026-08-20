@@ -16,6 +16,7 @@ export const useAdminCouponsStore = defineStore('adminCoupons', {
     coupons: [] as Coupon[],
     loading: false,
     loaded: false,
+    readOnly: false,
     errorCode: '',
     errorMessage: '',
   }),
@@ -43,7 +44,18 @@ export const useAdminCouponsStore = defineStore('adminCoupons', {
 
       activeLoad = (async () => {
         try {
-          this.coupons = await fetchCoupons(true)
+          try {
+            this.coupons = await fetchCoupons(true)
+            this.readOnly = false
+          } catch (error) {
+            if (!(error instanceof ApiError && error.code === 'FORBIDDEN')) {
+              throw error
+            }
+
+            // 一般會員改讀公開列表，仍可瀏覽後台課程頁面，但不取得停用券。
+            this.coupons = await fetchCoupons()
+            this.readOnly = true
+          }
           this.loaded = true
         } catch (error) {
           this.loaded = false
