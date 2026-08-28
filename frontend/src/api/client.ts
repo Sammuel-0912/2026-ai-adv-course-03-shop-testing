@@ -47,6 +47,16 @@ export interface CartItemPayload {
   quantity: number
 }
 
+/** 配送方式 */
+export type ShippingMethod = 'HOME_DELIVERY' | 'CONVENIENCE_STORE'
+
+/** 配送資訊（送 API 用） */
+export interface ShippingInput {
+  method: ShippingMethod
+  isRemoteArea?: boolean
+  isSameDay?: boolean
+}
+
 export interface CouponInfo {
   code: string
   percentOff?: number
@@ -58,6 +68,8 @@ export interface CouponInfo {
 export interface PreviewResult {
   subtotal: number
   discount: number
+  /** 運費（未帶 shipping 試算時為 0） */
+  shippingFee?: number
   total: number
   coupon?: CouponInfo
 }
@@ -76,6 +88,8 @@ export interface Order {
   status: OrderStatus
   subtotal: number
   discount: number
+  shippingFee?: number
+  shippingMethod?: ShippingMethod | null
   total: number
   couponCode?: string | null
   items?: OrderItem[]
@@ -152,8 +166,12 @@ export function fetchProducts(): Promise<Product[]> {
   return request<Product[]>('/api/products')
 }
 
-/** 優惠券試算：POST /api/coupons/preview（無券時也可呼叫取得 subtotal） */
-export function previewCoupon(payload: { items: CartItemPayload[]; code?: string }): Promise<PreviewResult> {
+/** 優惠券試算：POST /api/coupons/preview（無券時也可呼叫取得 subtotal；帶 shipping 可一併試算運費） */
+export function previewCoupon(payload: {
+  items: CartItemPayload[]
+  code?: string
+  shipping?: ShippingInput
+}): Promise<PreviewResult> {
   return request<PreviewResult>('/api/coupons/preview', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -161,7 +179,11 @@ export function previewCoupon(payload: { items: CartItemPayload[]; code?: string
 }
 
 /** 建立訂單：POST /api/orders（需登入） */
-export function createOrder(payload: { items: CartItemPayload[]; couponCode?: string }): Promise<Order> {
+export function createOrder(payload: {
+  items: CartItemPayload[]
+  couponCode?: string
+  shipping?: ShippingInput
+}): Promise<Order> {
   return request<Order>('/api/orders', {
     method: 'POST',
     body: JSON.stringify(payload),

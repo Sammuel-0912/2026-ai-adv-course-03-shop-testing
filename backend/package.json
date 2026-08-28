@@ -11,7 +11,12 @@
     "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "openapi": "tsx scripts/generate-openapi.ts",
+    "postman": "tsx scripts/generate-openapi.ts && tsx scripts/openapi-to-postman.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -24,15 +29,21 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "better-sqlite3"
+    ],
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "bcrypt"
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.16.5",
     "@types/supertest": "^6.0.3",
+    "esbuild": "0.28.2",
     "supertest": "^7.1.4",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",

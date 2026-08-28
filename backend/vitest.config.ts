@@ -6,6 +6,9 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     fileParallelism: false,
+    // 只跑 tests/ 下的 Vitest 測試；e2e/ 由 Playwright 執行（避免 .spec.ts 被 Vitest 收錄）
+    include: ['tests/**/*.test.ts'],
+    exclude: ['node_modules', 'e2e'],
     env: {
       DB_PATH: ':memory:',
     },

@@ -13,7 +13,12 @@
 | --- | --- | --- |
 | `backend/` | `pnpm dev` | 啟動 API（http://localhost:3001，tsx watch） |
 | `backend/` | `pnpm typecheck` | `tsc --noEmit` |
-| `backend/` | `pnpm test` | Vitest |
+| `backend/` | `pnpm test` | Vitest（全部） |
+| `backend/` | `pnpm test:unit` | 單元測試（`tests/unit`） |
+| `backend/` | `pnpm test:integration` | 整合測試（`tests/integration`，Supertest + in-memory SQLite） |
+| `backend/` | `pnpm test:e2e` | Playwright E2E（需先啟動前後端；見 [docs/testing.md](docs/testing.md)） |
+| `backend/` | `pnpm openapi` | 產生 `docs/openapi.json` |
+| `backend/` | `pnpm postman` | 產生 openapi 並轉出 `docs/postman_collection.json` |
 | `frontend/` | `pnpm dev` | 啟動前端（http://localhost:5173） |
 | `frontend/` | `pnpm typecheck` | `vue-tsc --noEmit` |
 | `frontend/` | `pnpm build` | typecheck + vite build |
@@ -24,8 +29,17 @@
 
 1. 低消門檻：`subtotal >= min_spend` 才可折抵（**含等於**）；未達門檻回傳錯誤 `COUPON_MIN_SPEND_NOT_MET`。
 2. 折扣：`discount = min(floor(subtotal × percent_off / 100), max_discount)` —— **先算百分比、無條件捨去、再套折抵上限**。
-3. `total = subtotal - discount`，必為正整數（綠界 TotalAmount 只收整數）。
+3. `total = subtotal - discount + shippingFee`，必為正整數（綠界 TotalAmount 只收整數）。
 4. 優惠券試算（preview）與建立訂單**必須共用同一個 `calculateOrderAmount()` 純函式**；伺服器端重算金額，不信任前端傳入的金額。
+
+## 商業規則（配送費用計算）
+
+運費封裝於獨立純函式模組 `backend/src/utils/shipping.ts`（`calculateShipping()`），整合於建立訂單流程。詳見 [docs/shipping.md](docs/shipping.md)。
+
+1. 宅配基本運費 **120**（`HOME_DELIVERY`）；超商取貨 **60**（`CONVENIENCE_STORE`）。
+2. 商品小計 `subtotal >= 1500`（含等於）免**基本運費**——**僅宅配**適用；超商取貨不在此限，滿額仍收 60。
+3. 偏遠地區 +200、當日急件 +250，為附加費，任何配送方式都加收，且不受滿額免運影響。
+4. `shippingFee = baseFee + surcharge`；建立訂單時 `total = subtotal - discount + shippingFee`；配送方式不合法回 `INVALID_SHIPPING_METHOD`。
 
 ## API 契約
 
@@ -40,8 +54,8 @@
 | POST | `/api/auth/register` | `{email, password, name}` → `{data: {token, user}}` | 201 |
 | POST | `/api/auth/login` | `{email, password}` → `{data: {token, user}}` | 200 |
 | GET | `/api/products` | → `{data: Product[]}` | 200 |
-| POST | `/api/coupons/preview` | `{items: [{productId, quantity}], code?}` → `{data: {subtotal, discount, total, coupon?}}` | 200 |
-| POST | `/api/orders` | 需登入。`{items, couponCode?}` → `{data: Order}`（transaction 扣庫存＋建 pending 通知） | 201 |
+| POST | `/api/coupons/preview` | `{items: [{productId, quantity}], code?, shipping?: {method, isRemoteArea?, isSameDay?}}` → `{data: {subtotal, discount, shippingFee, total, coupon?}}`（未帶 shipping 時 shippingFee=0） | 200 |
+| POST | `/api/orders` | 需登入。`{items, couponCode?, shipping?: {method, isRemoteArea?, isSameDay?}}` → `{data: Order}`（含 `shippingFee`、`shippingMethod`；transaction 扣庫存＋建 pending 通知；`shipping` 省略時預設宅配） | 201 |
 | GET | `/api/orders/:id` | 需登入（僅本人）→ `{data: Order}`（含 items） | 200 |
 | POST | `/api/orders/:id/checkout` | 需登入 → `{data: {html}}` 綠界自動送出表單（付款方式全開 `ALL`：信用卡／ATM 轉帳／超商等） | 200 |
 | POST | `/api/ecpay/notify` | 綠界 ReturnURL（server-to-server，本地開發打不到；僅驗 CheckMacValue 後回 `1\|OK`，不寫 DB） | 200 |

@@ -134,6 +134,10 @@ onUnmounted(stopPolling)
             <span class="text-gray-500">折扣</span>
             <span class="text-green-600">−NT$ {{ order.discount }}</span>
           </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">運費</span>
+            <span data-testid="order-shipping-fee" class="text-gray-700">NT$ {{ order.shippingFee ?? 0 }}</span>
+          </div>
           <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base">
             <span class="font-semibold">總計</span>
             <span class="text-lg font-bold text-rose-600">NT$ {{ order.total }}</span>

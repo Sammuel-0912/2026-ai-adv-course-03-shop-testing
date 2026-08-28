@@ -5,7 +5,17 @@ data/
 *.sqlite-shm
 *.sqlite-wal
 prompts/
-test-results/
-playwright-report/
 dist/
 .DS_Store
+
+# 測試 / Postman 衍伸物（皆可自動重生，不入版控）
+# Playwright E2E 報告、追蹤、影片、失敗截圖
+test-results/
+playwright-report/
+**/e2e/report/
+**/e2e/screenshots/
+.last-run.json
+# Postman collection（由 `npm run postman` 從 openapi.json 產生）
+docs/postman_collection.json
+# 本機開發 / 測試過程產生的 log
+*.log

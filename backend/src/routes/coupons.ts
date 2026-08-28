@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { calculateOrderAmount, type PricingItem } from '../services/pricing.js';
+import { calculateShipping, SHIPPING_METHODS, type ShippingMethod } from '../utils/shipping.js';
 
 const router = Router();
 
@@ -21,9 +22,10 @@ interface CouponRow {
 
 // 優惠券試算（與建立訂單共用 calculateOrderAmount 純函式）
 router.post('/preview', (req, res) => {
-  const { items, code } = (req.body ?? {}) as {
+  const { items, code, shipping } = (req.body ?? {}) as {
     items?: Array<{ productId?: number; quantity?: number }>;
     code?: string;
+    shipping?: { method?: string; isRemoteArea?: boolean; isSameDay?: boolean };
   };
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -57,18 +59,34 @@ router.post('/preview', (req, res) => {
     }
   }
 
-  const { subtotal, discount, total } = calculateOrderAmount(
+  const { subtotal, discount, total: amountAfterDiscount } = calculateOrderAmount(
     pricingItems,
     coupon
       ? { percentOff: coupon.percent_off, maxDiscount: coupon.max_discount, minSpend: coupon.min_spend }
       : null
   );
 
+  // 選填運費試算：與建立訂單共用 calculateShipping。未帶 shipping 時 shippingFee = 0（向後相容）。
+  let shippingFee = 0;
+  if (shipping) {
+    const shippingMethod = (shipping.method ?? 'HOME_DELIVERY') as ShippingMethod;
+    if (!SHIPPING_METHODS.includes(shippingMethod)) {
+      throw new AppError(400, 'INVALID_SHIPPING_METHOD', '配送方式不合法');
+    }
+    shippingFee = calculateShipping({
+      method: shippingMethod,
+      subtotal,
+      isRemoteArea: shipping.isRemoteArea === true,
+      isSameDay: shipping.isSameDay === true,
+    }).fee;
+  }
+
   res.json({
     data: {
       subtotal,
       discount,
-      total,
+      shippingFee,
+      total: amountAfterDiscount + shippingFee,
       coupon: coupon ? { code: coupon.code, percentOff: coupon.percent_off } : null,
     },
   });

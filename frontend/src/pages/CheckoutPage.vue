@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// 結帳頁：顯示後端 preview 金額，確認付款後建立訂單並導向綠界付款
-import { onMounted, ref } from 'vue'
+// 結帳頁：選擇配送方式、顯示後端 preview 金額（含運費），確認付款後建立訂單並導向綠界付款
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   ApiError,
@@ -8,6 +8,7 @@ import {
   createOrder,
   previewCoupon,
   type PreviewResult,
+  type ShippingMethod,
 } from '../api/client'
 import { useCartStore } from '../stores/cart'
 
@@ -18,25 +19,49 @@ const amounts = ref<PreviewResult | null>(null)
 const errorMessage = ref('')
 const submitting = ref(false)
 
+// 配送方式與附加條件（送後端 preview / createOrder）
+const shippingMethod = ref<ShippingMethod>('HOME_DELIVERY')
+const isRemoteArea = ref(false)
+const isSameDay = ref(false)
+
+/** 目前配送資訊 */
+function currentShipping() {
+  return {
+    method: shippingMethod.value,
+    isRemoteArea: isRemoteArea.value,
+    isSameDay: isSameDay.value,
+  }
+}
+
+/** 向後端試算金額（含運費，金額一律以後端回傳為準） */
+async function refreshPreview() {
+  try {
+    amounts.value = await previewCoupon({
+      items: cart.itemsPayload,
+      code: cart.couponCode || undefined,
+      shipping: currentShipping(),
+    })
+    errorMessage.value = ''
+  } catch (err) {
+    errorMessage.value = err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
+  }
+}
+
 onMounted(async () => {
   // 空購物車直接回購物車頁
   if (cart.items.length === 0) {
     router.replace('/cart')
     return
   }
-  try {
-    amounts.value = await previewCoupon({
-      items: cart.itemsPayload,
-      code: cart.couponCode || undefined,
-    })
-  } catch (err) {
-    errorMessage.value = err instanceof ApiError ? err.message : '金額試算失敗，請稍後再試'
-  }
+  await refreshPreview()
 })
+
+// 配送方式或附加條件變更時重新試算運費與總額
+watch([shippingMethod, isRemoteArea, isSameDay], refreshPreview)
 
 /**
  * 確認付款：
- * 1. createOrder 建立訂單（後端 transaction 扣庫存）
+ * 1. createOrder 建立訂單（含配送資訊，後端 transaction 扣庫存並計算運費）
  * 2. checkoutOrder 取得綠界自動送出表單 {html}
  * 3. 清空購物車後以 document.write 整頁導向綠界
  */
@@ -47,6 +72,7 @@ async function handleCheckout() {
     const order = await createOrder({
       items: cart.itemsPayload,
       couponCode: cart.couponCode || undefined,
+      shipping: currentShipping(),
     })
     const { html } = await checkoutOrder(order.id)
     // 成功前先清空購物車，避免回上一頁時重複下單
@@ -88,6 +114,45 @@ async function handleCheckout() {
         </p>
       </section>
 
+      <!-- 配送方式 -->
+      <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-3 font-semibold">配送方式</h2>
+        <div class="space-y-2 text-sm">
+          <label class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="shipping-method"
+              value="HOME_DELIVERY"
+              data-testid="shipping-home"
+              :checked="shippingMethod === 'HOME_DELIVERY'"
+              @change="shippingMethod = 'HOME_DELIVERY'"
+            />
+            <span>宅配（基本運費 NT$ 120，滿 1,500 免運）</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="shipping-method"
+              value="CONVENIENCE_STORE"
+              data-testid="shipping-cstore"
+              :checked="shippingMethod === 'CONVENIENCE_STORE'"
+              @change="shippingMethod = 'CONVENIENCE_STORE'"
+            />
+            <span>超商取貨（NT$ 60，不適用滿額免運）</span>
+          </label>
+        </div>
+        <div class="mt-3 space-y-2 border-t border-gray-100 pt-3 text-sm">
+          <label class="flex items-center gap-2">
+            <input v-model="isRemoteArea" type="checkbox" data-testid="shipping-remote" />
+            <span>偏遠地區（加收 NT$ 200）</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input v-model="isSameDay" type="checkbox" data-testid="shipping-sameday" />
+            <span>當日急件（加收 NT$ 250）</span>
+          </label>
+        </div>
+      </section>
+
       <!-- 金額摘要（後端 preview 回傳值） -->
       <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 class="mb-3 font-semibold">金額明細</h2>
@@ -104,6 +169,13 @@ async function handleCheckout() {
             <span class="flex items-baseline gap-1 text-green-600">
               <span>−NT$</span>
               <span data-testid="discount" class="font-medium">{{ amounts.discount }}</span>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">運費</span>
+            <span class="flex items-baseline gap-1">
+              <span class="text-gray-400">NT$</span>
+              <span data-testid="shipping-fee" class="font-medium">{{ amounts.shippingFee ?? 0 }}</span>
             </span>
           </div>
           <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base">

@@ -8,6 +8,11 @@ import {
   type PricingItem,
 } from '../services/pricing.js';
 import { createPaymentFormHtml, queryTradeInfo } from '../services/ecpayClient.js';
+import {
+  calculateShipping,
+  SHIPPING_METHODS,
+  type ShippingMethod,
+} from '../utils/shipping.js';
 
 const router = Router();
 
@@ -36,6 +41,8 @@ interface OrderRow {
   coupon_id: number | null;
   subtotal: number;
   discount: number;
+  shipping_fee: number;
+  shipping_method: string | null;
   total: number;
   status: 'pending' | 'paid' | 'failed';
   merchant_trade_no: string | null;
@@ -70,6 +77,8 @@ function serializeOrder(order: OrderRow) {
     couponId: order.coupon_id,
     subtotal: order.subtotal,
     discount: order.discount,
+    shippingFee: order.shipping_fee,
+    shippingMethod: order.shipping_method,
     total: order.total,
     status: order.status,
     merchantTradeNo: order.merchant_trade_no,
@@ -99,9 +108,10 @@ function getOwnOrder(orderId: string, userId: number): OrderRow {
 // 建立訂單（transaction：扣庫存＋建訂單＋建 pending 通知）
 router.post('/', (req, res) => {
   const userId = req.userId!;
-  const { items, couponCode } = (req.body ?? {}) as {
+  const { items, couponCode, shipping } = (req.body ?? {}) as {
     items?: Array<{ productId?: number; quantity?: number }>;
     couponCode?: string;
+    shipping?: { method?: string; isRemoteArea?: boolean; isSameDay?: boolean };
   };
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -113,6 +123,14 @@ router.post('/', (req, res) => {
       throw new AppError(400, 'VALIDATION_ERROR', 'items 格式不正確');
     }
   }
+
+  // 配送方式：未指定時預設宅配（HOME_DELIVERY）
+  const shippingMethod = (shipping?.method ?? 'HOME_DELIVERY') as ShippingMethod;
+  if (!SHIPPING_METHODS.includes(shippingMethod)) {
+    throw new AppError(400, 'INVALID_SHIPPING_METHOD', '配送方式不合法');
+  }
+  const isRemoteArea = shipping?.isRemoteArea === true;
+  const isSameDay = shipping?.isSameDay === true;
 
   // 優惠券在 transaction 外先查（只查 is_active=1）
   let coupon: CouponRow | null = null;
@@ -152,20 +170,39 @@ router.post('/', (req, res) => {
       });
     }
 
-    // 金額一律經過 calculateOrderAmount 純函式（與 preview 共用）
-    const { subtotal, discount, total } = calculateOrderAmount(
+    // 商品金額一律經過 calculateOrderAmount 純函式（與 preview 共用）
+    const { subtotal, discount, total: amountAfterDiscount } = calculateOrderAmount(
       pricingItems,
       coupon
         ? { percentOff: coupon.percent_off, maxDiscount: coupon.max_discount, minSpend: coupon.min_spend }
         : null
     );
 
+    // 運費一律經過 calculateShipping 純函式（Shipping 模組）
+    const shippingResult = calculateShipping({
+      method: shippingMethod,
+      subtotal,
+      isRemoteArea,
+      isSameDay,
+    });
+
+    // 訂單總額 = 折扣後商品金額 + 運費（綠界 TotalAmount 收此整數）
+    const total = amountAfterDiscount + shippingResult.fee;
+
     const orderResult = db
       .prepare(
-        `INSERT INTO orders (user_id, coupon_id, subtotal, discount, total, status)
-         VALUES (?, ?, ?, ?, ?, 'pending')`
+        `INSERT INTO orders (user_id, coupon_id, subtotal, discount, shipping_fee, shipping_method, total, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`
       )
-      .run(userId, coupon?.id ?? null, subtotal, discount, total);
+      .run(
+        userId,
+        coupon?.id ?? null,
+        subtotal,
+        discount,
+        shippingResult.fee,
+        shippingMethod,
+        total
+      );
 
     const orderId = Number(orderResult.lastInsertRowid);
 

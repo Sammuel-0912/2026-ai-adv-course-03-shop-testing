@@ -57,6 +57,8 @@ db.exec(`
     coupon_id INTEGER,
     subtotal INTEGER NOT NULL,
     discount INTEGER NOT NULL,
+    shipping_fee INTEGER NOT NULL DEFAULT 0,
+    shipping_method TEXT,
     total INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
     merchant_trade_no TEXT,
@@ -83,6 +85,17 @@ db.exec(`
     sent_at TEXT
   );
 `);
+
+// 輕量 migration：既有資料庫（CREATE TABLE IF NOT EXISTS 不會補欄位）補上運費欄位
+const orderColumns = db.prepare('PRAGMA table_info(orders)').all() as Array<{ name: string }>;
+const hasColumn = (name: string) => orderColumns.some((col) => col.name === name);
+
+if (!hasColumn('shipping_fee')) {
+  db.exec('ALTER TABLE orders ADD COLUMN shipping_fee INTEGER NOT NULL DEFAULT 0');
+}
+if (!hasColumn('shipping_method')) {
+  db.exec('ALTER TABLE orders ADD COLUMN shipping_method TEXT');
+}
 
 // 首次 seed：僅當 products 為空時執行
 const productCount = db.prepare('SELECT COUNT(*) AS count FROM products').get() as { count: number };
