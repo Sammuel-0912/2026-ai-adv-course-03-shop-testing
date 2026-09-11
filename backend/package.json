@@ -14,9 +14,10 @@
     "test:watch": "vitest",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
-    "test:e2e": "playwright test",
+    "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
     "openapi": "tsx scripts/generate-openapi.ts",
-    "postman": "tsx scripts/generate-openapi.ts && tsx scripts/openapi-to-postman.ts"
+    "postman": "tsx scripts/generate-openapi.ts && tsx scripts/openapi-to-postman.ts",
+    "postman:run": "cross-env NODE_OPTIONS= tsx scripts/generate-openapi.ts && cross-env NODE_OPTIONS= tsx scripts/openapi-to-postman.ts && newman run ../docs/postman_collection.json --env-var baseUrl=http://localhost:3001 --ignore-redirects"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -43,6 +44,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.16.5",
     "@types/supertest": "^6.0.3",
+    "cross-env": "^10.1.0",
     "esbuild": "0.28.2",
     "supertest": "^7.1.4",
     "tsx": "^4.20.3",

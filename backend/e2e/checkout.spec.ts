@@ -104,34 +104,48 @@ test('完整結帳與綠界網路ATM付款流程', async ({ page }) => {
     }
   }
   if (!hit) throw new Error('找不到土地銀行測試頁的 Save 按鈕');
-  let payPage = hit.page;
+  const payPage = hit.page;
+
+  // 12~13. 等待回到前端訂單頁。
+  // 點 Save 前先佈署事件驅動監聽，避免導航完成後才開始等待（race condition）。
+  // WebATM 付款完成後綠界多半「自動送出」OrderResultURL（DoAutoSubmitForm）直接導回商店；
+  // 若中途出現「付款成功／返回商店」頁，則主動點擊「返回商店」。
+  const FRONT = process.env.E2E_BASE_URL ?? 'http://localhost:5173';
+  const isOrderUrl = (url: string) => url.startsWith(FRONT) && /\/orders\/\d+/.test(url);
+
+  let resolveOrderPage!: (p: Page) => void;
+  const orderPagePromise = new Promise<Page>((resolve) => { resolveOrderPage = resolve; });
+  const watchPage = (p: Page) => {
+    if (isOrderUrl(p.url())) { resolveOrderPage(p); return; }
+    p.waitForURL((url) => isOrderUrl(url.href), { timeout: 120_000 })
+      .then(() => resolveOrderPage(p))
+      .catch(() => {});
+  };
+  for (const p of context.pages()) watchPage(p);
+  context.on('page', watchPage);
+
   await payPage.bringToFront().catch(() => {});
   await hit.btn.click();
 
-  // 12~13. 等待回到前端訂單頁。
-  // WebATM 付款完成後綠界多半「自動送出」OrderResultURL（DoAutoSubmitForm）直接導回商店；
-  // 若中途出現「付款成功／返回商店」頁，則主動點擊「返回商店」。
-  const FRONT = process.env.E2E_BASE_URL ?? 'http://localhost:5199';
-  async function findOrderPage() {
-    for (const p of context.pages()) {
-      if (p.url().startsWith(FRONT) && /\/orders\/\d+/.test(p.url())) return p;
+  // 若出現「返回商店」按鈕，點擊它以觸發導回
+  await page.waitForTimeout(3000);
+  for (const p of context.pages()) {
+    const back = p
+      .getByRole('button', { name: /返回商店/ })
+      .or(p.getByRole('link', { name: /返回商店/ }));
+    if (await back.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      await back.first().click().catch(() => {});
+      break;
     }
-    return null;
   }
-  let orderPage = await findOrderPage();
-  for (let i = 0; i < 60 && !orderPage; i++) {
-    for (const p of context.pages()) {
-      const back = p
-        .getByRole('button', { name: /返回商店/ })
-        .or(p.getByRole('link', { name: /返回商店/ }));
-      if (await back.first().isVisible().catch(() => false)) {
-        await back.first().click().catch(() => {});
-      }
-    }
-    await page.waitForTimeout(1000);
-    orderPage = await findOrderPage();
-  }
-  if (!orderPage) throw new Error('付款後未導回前端訂單頁');
+
+  const orderPage = await Promise.race([
+    orderPagePromise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('付款後未導回前端訂單頁')), 120_000)
+    ),
+  ]);
+  context.off('page', watchPage);
 
   // 14. 驗證訂單顯示「已付款」，狀態為 paid（前端每 3 秒輪詢 check-payment）
   await orderPage.bringToFront().catch(() => {});
